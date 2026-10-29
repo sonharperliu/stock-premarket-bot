@@ -1,0 +1,9 @@
+yfinance>=0.2.54
+pandas>=2.2
+numpy>=1.26
+requests>=2.32
+pandas_market_calendars>=4.4
+anthropic>=0.40
+beautifulsoup4>=4.12
+lxml>=5.2
+html5lib>=1.1
