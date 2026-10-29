@@ -8,6 +8,10 @@ on:
     - cron: "50 12 * * 1-5"   # 美股（夏令 EDT）= 紐約 08:50 啟動 → 09:20 推播
     - cron: "50 13 * * 1-5"   # 美股（冬令 EST）= 紐約 08:50 啟動 → 09:20 推播
     - cron: "15 0 * * 1-5"    # 台股 = 台北 08:15 啟動 → 08:50 推播
+  # 測試開關：修改 repo 根目錄的 .run-test 並推送 → 立即強制執行一次（commit 訊息含 [tw] 則測台股）
+  push:
+    branches: [main]
+    paths: [".run-test"]
   workflow_dispatch:
     inputs:
       market:
@@ -25,7 +29,7 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write   # 僅測試模式用來把 log 推到 test-results 分支
 
 # 程式碼放在 repo 的 stock-premarket-bot/ 子資料夾，所有指令都在該資料夾內執行
 defaults:
@@ -40,8 +44,8 @@ jobs:
       group: premarket-${{ github.event.schedule == '15 0 * * 1-5' && 'tw' || inputs.market || 'us' }}
       cancel-in-progress: false
     env:
-      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (github.event.schedule == '15 0 * * 1-5' && 'tw' || 'us') }}
-      FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (github.event_name == 'push' && (contains(github.event.head_commit.message, '[tw]') && 'tw' || 'us')) || (github.event.schedule == '15 0 * * 1-5' && 'tw' || 'us') }}
+      FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.force) || github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -71,7 +75,18 @@ jobs:
           ARGS="--market $MARKET"
           if [ "$FORCE" = "true" ]; then ARGS="$ARGS --force"; fi
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
-          python main.py $ARGS
+          set -o pipefail
+          python main.py $ARGS 2>&1 | tee run.log
+
+      - name: 測試模式：把 log 與報告推到 test-results 分支
+        if: github.event_name == 'push' && always()
+        run: |
+          mkdir -p /tmp/out && cp -r reports /tmp/out/ 2>/dev/null || true
+          cp run.log /tmp/out/ 2>/dev/null || echo "no run.log" > /tmp/out/run.log
+          cd /tmp/out && git init -q && git checkout -q -b test-results
+          echo "run=${{ github.run_id }} market=$MARKET sha=${{ github.sha }}" > meta.txt
+          git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "test run ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" test-results
 
       - name: 保存報告
         if: steps.gate.outputs.run == 'true' && always()
