@@ -117,8 +117,7 @@ def valuation_and_revenue(codes: set[str]) -> dict[str, dict]:
                                        "dividend_yield_pct": _num(r.get("DividendYield"))})
     except Exception as e:
         log.warning("BWIBBU 失敗：%s", e)
-    for url in ("https://openapi.twse.com.tw/v1/opendata/t187ap05_L",
-                "https://www.tpex.org.tw/openapi/v1/mopsfe_t187ap05_O"):
+    for url in ("https://openapi.twse.com.tw/v1/opendata/t187ap05_L",):  # 上櫃月營收端點目前無公開 JSON
         try:
             for r in S.get(url, timeout=20).json():
                 c = r.get("公司代號")

@@ -48,7 +48,7 @@
 | `ANTHROPIC_API_KEY` | https://console.anthropic.com → API Keys | ✅ |
 | `TELEGRAM_BOT_TOKEN` | Telegram 搜尋 **@BotFather** → `/newbot` → 取得 token | ✅ |
 | `TELEGRAM_CHAT_ID` | 先對你的 bot 傳一則訊息，再開 `https://api.telegram.org/bot<TOKEN>/getUpdates`，找 `"chat":{"id":…}` | ✅ |
-| `FRED_API_KEY` | https://fred.stlouisfed.org/docs/api/api_key.html（免費） | 選用 |
+| `FRED_API_KEY` | https://fred.stlouisfed.org/docs/api/api_key.html（免費） | **強烈建議**：FRED 免金鑰端點會擋 GitHub 伺服器，沒有金鑰就沒有 GDP/CPI/就業/流動性等總經數據 |
 
 ### 3. 設定 Secrets
 repo → **Settings → Secrets and variables → Actions → New repository secret**，逐一加入上表金鑰。
@@ -72,6 +72,11 @@ GitHub cron 只支援 UTC。workflow 為美股同時排了兩個時間：UTC 12:
 - 颱風假等臨時休市：編輯 `data/tw_extra_closures.txt`（一行一個日期）
 - 分析框架與輸出格式：`src/analyzer.py` 的 `SYSTEM_PROMPT`
 - 停損 ATR 倍數、風報比：`src/technicals.py` 的 `atr_plan()`
+
+## 測試開關（不必等排程）
+修改 repo 根目錄的 `.run-test`（內容隨意）並 commit，會立即強制執行一次並真的推播到 Telegram；
+commit 訊息含 `[tw]` 則測台股，否則測美股。執行 log 與報告會推到 `test-results` 分支，方便除錯。
+也可以在 Actions 頁面手動 Run workflow。
 
 ## 本機測試
 ```bash
