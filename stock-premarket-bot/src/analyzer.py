@@ -25,29 +25,46 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
    - 不追高：進場區上緣原則上不高於昨收 + 0.3 ATR
 6. 數據缺漏請明說，不可捏造任何數字或新聞。
 
-## 輸出格式（嚴格遵守，分兩段）
-第一段：<json> 與 </json> 之間放一個合法 JSON 物件（字串內不可有未跳脫的雙引號與換行），結構如下：
-{
-  "market_regime": {"stance": "risk-on|neutral|risk-off", "summary": "3-4 句總經與資金面結論", "key_points": ["…", "…", "…"]},
-  "sector_view": [{"sector": "名稱", "stance": "超配|中性|低配", "reason": "一句話"}],
-  "picks": [{
-     "ticker": "代號(與輸入 candidates 的 key 完全相同)", "name": "名稱", "rank": 1, "conviction": 1,
-     "setup": "突破 / 回測支撐 / 趨勢延續 / 反轉 等",
-     "thesis": "2-3 句核心論點，需引用具體數據",
-     "scores": {"macro": 0, "fundamental": 0, "moat": 0, "technical": 0, "chips": 0, "news": 0},
-     "conflicts": "交叉驗證發現的矛盾（沒有則寫 無）",
-     "entry_low": 0, "entry_high": 0, "stop_loss": 0, "take_profit_1": 0, "take_profit_2": 0,
-     "risk_reward": 0, "holding_period": "例如 3-10 個交易日", "position_size_pct": 0,
-     "catalysts": ["…"], "key_risks": ["…"]
-  }],
-  "avoid": [{"ticker": "…", "reason": "一句話"}],
-  "events_today": ["時間 事件 — 對盤面可能影響"]
+## 輸出方式
+完成分析後，呼叫工具 submit_premarket_report 一次提交全部結果（不要另外輸出文字）。
+- picks 依信心排序，數量等於使用者指定數量（合格標的不足可少於指定數，並在報告說明）
+- conviction 為 1-5 整數；價格欄位為數字；position_size_pct 單檔不超過 10%，risk-off 時整體降低
+- thesis 2-3 句並引用具體數據；ticker 必須與 candidates 的 key 完全相同
+- report_markdown 為繁體中文 Markdown 完整報告，結構：一、總經與流動性 二、板塊輪動 三、精選標的逐檔分析（六維度評分表 + 買賣點，每檔約 150-250 字）四、今日事件與風險 五、操作策略與部位建議。全文控制在 6000 字以內。
+全部使用繁體中文。"""
+
+_STR = {"type": "string"}
+_NUM = {"type": "number"}
+_STRS = {"type": "array", "items": {"type": "string"}}
+REPORT_TOOL = {
+    "name": "submit_premarket_report",
+    "description": "提交盤前作戰報告：市場體制、板塊觀點、精選標的與買賣點、避開名單、今日事件、完整 Markdown 報告。",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "market_regime": {"type": "object", "properties": {
+                "stance": {"type": "string", "enum": ["risk-on", "neutral", "risk-off"]},
+                "summary": _STR, "key_points": _STRS}, "required": ["stance", "summary", "key_points"]},
+            "sector_view": {"type": "array", "items": {"type": "object", "properties": {
+                "sector": _STR, "stance": {"type": "string", "enum": ["超配", "中性", "低配"]}, "reason": _STR},
+                "required": ["sector", "stance", "reason"]}},
+            "picks": {"type": "array", "items": {"type": "object", "properties": {
+                "ticker": _STR, "name": _STR, "rank": {"type": "integer"},
+                "conviction": {"type": "integer", "minimum": 1, "maximum": 5}, "setup": _STR, "thesis": _STR,
+                "scores": {"type": "object", "properties": {k: _NUM for k in
+                           ["macro", "fundamental", "moat", "technical", "chips", "news"]}},
+                "conflicts": _STR, "entry_low": _NUM, "entry_high": _NUM, "stop_loss": _NUM,
+                "take_profit_1": _NUM, "take_profit_2": _NUM, "risk_reward": _NUM, "holding_period": _STR,
+                "position_size_pct": _NUM, "catalysts": _STRS, "key_risks": _STRS},
+                "required": ["ticker", "name", "conviction", "setup", "thesis", "scores", "entry_low", "entry_high",
+                             "stop_loss", "take_profit_1", "take_profit_2", "position_size_pct", "key_risks"]}},
+            "avoid": {"type": "array", "items": {"type": "object", "properties": {"ticker": _STR, "reason": _STR}}},
+            "events_today": _STRS,
+            "report_markdown": _STR,
+        },
+        "required": ["market_regime", "sector_view", "picks", "avoid", "events_today", "report_markdown"],
+    },
 }
-conviction 為 1-5 的整數；價格欄位為數字。picks 依信心排序，數量等於使用者指定數量（合格標的不足可以少於指定數，並在報告說明）。position_size_pct 為建議占總資金百分比，單檔不超過 10%，risk-off 時整體應降低。
-
-第二段：<report> 與 </report> 之間放完整繁體中文 Markdown 報告：一、總經與流動性 二、板塊輪動 三、精選標的逐檔分析（含六維度評分表與買賣點）四、今日事件與風險 五、操作策略與部位建議。
-
-兩段以外不要輸出任何文字。全部使用繁體中文。"""
 
 
 def _compact(obj) -> str:
@@ -59,14 +76,21 @@ def call_claude(data_pack: dict, market: str, n_picks: int) -> dict:
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, max_retries=3, timeout=600)
     user = (f"市場：{'美股' if market == 'us' else '台股'}。請從 candidates 中選出最終 {n_picks} 檔做多標的。\n"
             f"以下是盤前數據包（JSON）：\n{_compact(data_pack)}")
-    # 用串流呼叫：長輸出不會被 HTTP 逾時中斷
-    with client.messages.stream(model=ANTHROPIC_MODEL, max_tokens=16000, system=SYSTEM_PROMPT,
+    # 串流 + 強制工具呼叫：API 保證回傳結構化 JSON，不再解析自由文字
+    with client.messages.stream(model=ANTHROPIC_MODEL, max_tokens=32000, system=SYSTEM_PROMPT,
+                                tools=[REPORT_TOOL],
+                                tool_choice={"type": "tool", "name": REPORT_TOOL["name"]},
                                 messages=[{"role": "user", "content": user}]) as stream:
         resp = stream.get_final_message()
-    text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
     log.info("Claude 用量：input=%s output=%s stop=%s", resp.usage.input_tokens, resp.usage.output_tokens,
              resp.stop_reason)
-    return parse_response(text)
+    for b in resp.content:
+        if getattr(b, "type", "") == "tool_use" and isinstance(b.input, dict) and b.input.get("picks") is not None:
+            if resp.stop_reason == "max_tokens":
+                log.warning("輸出達上限，報告可能不完整")
+            return b.input
+    text = "".join(getattr(b, "text", "") for b in resp.content)
+    return parse_response(text)   # 備援：模型若以文字回覆仍嘗試解析
 
 
 def parse_response(text: str) -> dict:
