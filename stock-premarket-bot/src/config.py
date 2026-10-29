@@ -4,6 +4,8 @@ import os
 # ---- API Keys（GitHub Secrets）----
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL") or "claude-sonnet-5-5"   # 未設定或空字串都用預設
+# 主模型連續過載時改用的備援模型（不同模型的容量池不同）
+ANTHROPIC_FALLBACK_MODEL = os.getenv("ANTHROPIC_FALLBACK_MODEL") or "claude-opus-5-5"
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 FRED_API_KEY = (os.getenv("FRED_API_KEY") or "").strip()  # 可選；沒有就改用 fredgraph.csv 公開端點

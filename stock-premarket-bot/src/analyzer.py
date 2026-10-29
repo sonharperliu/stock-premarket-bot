@@ -5,7 +5,7 @@ import json
 import logging
 import re
 
-from .config import ANTHROPIC_API_KEY, ANTHROPIC_MODEL
+from .config import ANTHROPIC_API_KEY, ANTHROPIC_FALLBACK_MODEL, ANTHROPIC_MODEL
 
 log = logging.getLogger(__name__)
 
@@ -71,19 +71,71 @@ def _compact(obj) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"), default=str)
 
 
-def call_claude(data_pack: dict, market: str, n_picks: int) -> dict:
+RETRY_WAITS = (20, 45, 90)   # 過載/限流時的退避秒數
+
+
+def _retryable(e: Exception) -> bool:
     import anthropic
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, max_retries=3, timeout=600)
+    if isinstance(e, (anthropic.RateLimitError, anthropic.APIConnectionError, anthropic.InternalServerError)):
+        return True
+    if isinstance(e, anthropic.APIStatusError):   # 串流中途的 overloaded_error 不會被 SDK 自動重試
+        return getattr(e, "status_code", None) in (408, 409, 429, 500, 502, 503, 504, 529) or "overloaded" in str(e).lower()
+    return False
+
+
+def call_claude(data_pack: dict, market: str, n_picks: int) -> dict:
+    """主模型重試 3 次（退避 20/45/90 秒），仍失敗再改用備援模型一次。"""
+    import time
+    plan = [ANTHROPIC_MODEL] * (len(RETRY_WAITS) + 1)
+    if ANTHROPIC_FALLBACK_MODEL and ANTHROPIC_FALLBACK_MODEL != ANTHROPIC_MODEL:
+        plan.append(ANTHROPIC_FALLBACK_MODEL)
+    last: Exception | None = None
+    parse_retried = False
+    for i, model in enumerate(plan):
+        try:
+            result = _call_once(data_pack, market, n_picks, model)
+            if model != ANTHROPIC_MODEL:
+                result.setdefault("market_regime", {})["model_note"] = f"主模型過載，本報告由 {model} 產出"
+            return result
+        except ClaudeParseError as e:   # 格式錯誤只重試一次（不換模型、不退避），避免重複付費
+            last = e
+            if parse_retried:
+                raise
+            parse_retried = True
+            log.warning("Claude 回應格式錯誤，立即重試一次：%s", e)
+            try:
+                return _call_once(data_pack, market, n_picks, model)
+            except ClaudeParseError:
+                raise
+            except Exception as e2:
+                last = e2
+                if not _retryable(e2) or i == len(plan) - 1:
+                    raise
+                time.sleep(RETRY_WAITS[min(i, len(RETRY_WAITS) - 1)])
+        except Exception as e:
+            last = e
+            if not _retryable(e) or i == len(plan) - 1:
+                raise
+            wait = RETRY_WAITS[min(i, len(RETRY_WAITS) - 1)]
+            log.warning("Claude 第 %d 次失敗（%s: %s），%d 秒後重試%s", i + 1, type(e).__name__, str(e)[:120], wait,
+                        f"（下次改用 {plan[i + 1]}）" if plan[i + 1] != model else "")
+            time.sleep(wait)
+    raise last  # pragma: no cover
+
+
+def _call_once(data_pack: dict, market: str, n_picks: int, model: str) -> dict:
+    import anthropic
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, max_retries=2, timeout=600)
     user = (f"市場：{'美股' if market == 'us' else '台股'}。請從 candidates 中選出最終 {n_picks} 檔做多標的。\n"
             f"以下是盤前數據包（JSON）：\n{_compact(data_pack)}")
-    # 串流 + 強制工具呼叫：API 保證回傳結構化 JSON，不再解析自由文字
-    with client.messages.stream(model=ANTHROPIC_MODEL, max_tokens=32000, system=SYSTEM_PROMPT,
+    # 串流 + 工具呼叫：API 回傳結構化 JSON，不必解析自由文字
+    with client.messages.stream(model=model, max_tokens=32000, system=SYSTEM_PROMPT,
                                 tools=[REPORT_TOOL],
                                 tool_choice={"type": "auto"},   # 部分模型不支援強制指定工具；由系統提示要求呼叫
                                 messages=[{"role": "user", "content": user}]) as stream:
         resp = stream.get_final_message()
-    log.info("Claude 用量：input=%s output=%s stop=%s", resp.usage.input_tokens, resp.usage.output_tokens,
-             resp.stop_reason)
+    log.info("Claude[%s] 用量：input=%s output=%s stop=%s", model, resp.usage.input_tokens,
+             resp.usage.output_tokens, resp.stop_reason)
     for b in resp.content:
         if getattr(b, "type", "") == "tool_use" and isinstance(b.input, dict) and b.input.get("picks") is not None:
             if resp.stop_reason == "max_tokens":

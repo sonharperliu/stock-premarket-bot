@@ -38,6 +38,8 @@ def render_messages(result: dict, market: str, stamp: str, macro_line: str) -> l
     head = [f"{m['flag']} <b>{m['name']}盤前作戰報告</b>｜{e(stamp)}",
             f"市場體制：<b>{STANCE.get(reg.get('stance'), e(reg.get('stance')))}</b>",
             e(reg.get("summary", "")), ""]
+    if reg.get("model_note"):
+        head.append(f"<i>ℹ️ {e(reg['model_note'])}</i>")
     if macro_line:
         head.append(f"<code>{e(macro_line)}</code>")
     for k in reg.get("key_points", [])[:4]:

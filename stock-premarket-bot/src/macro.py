@@ -77,6 +77,7 @@ def fred_dashboard() -> dict:
                 item["prev_yoy_pct"] = round(float((prev / s.iloc[-14] - 1) * 100), 2)
             elif mode == "yoy_q" and len(s) > 4:
                 item["yoy_pct"] = round(float((last / s.iloc[-5] - 1) * 100), 2)
+                item["qoq_saar_pct"] = round(float(((last / prev) ** 4 - 1) * 100), 2)   # 市場慣用的季增年化率
             out[sid] = item
         except Exception as e:
             log.warning("FRED %s 計算失敗：%s", sid, e)
@@ -108,21 +109,55 @@ def market_snapshot() -> dict:
     return out
 
 
+_MONTH_CODE = "FGHJKMNQUVXZ"
+
+
+def _zq_symbols(n: int = 3) -> list[tuple[str, str]]:
+    """未來 n 個月的 30 天 Fed Funds 期貨合約代號，例如 ZQZ26.CBT（2026 年 12 月）。"""
+    today = datetime.utcnow().date()
+    out = []
+    for k in range(1, n + 1):
+        y, m = today.year + (today.month - 1 + k) // 12, (today.month - 1 + k) % 12 + 1
+        out.append((f"{y}-{m:02d}", f"ZQ{_MONTH_CODE[m - 1]}{y % 100:02d}.CBT"))
+    return out
+
+
 def fed_expectation(fred: dict, mkt: dict) -> dict | None:
-    """簡化版 FedWatch：用 30 天 Fed Funds 期貨（ZQ=F，100-價格=市場隱含平均利率）對比目前有效利率。
-    CME FedWatch 無免費 API，此為粗估，僅供方向判斷。"""
-    try:
-        implied = 100 - mkt["ZQ=F"]["last"]
-        effr = fred["DFF"]["value"] if "DFF" in fred else mkt["^IRX"]["last"]
-        diff_bp = (implied - effr) * 100
-        p_cut = max(0.0, min(1.0, -diff_bp / 25))
-        p_hike = max(0.0, min(1.0, diff_bp / 25))
-        return {"implied_rate_front_month": round(implied, 3), "effective_rate": effr,
-                "implied_change_bp": round(diff_bp, 1),
-                "approx_prob_cut_25bp": round(p_cut, 2), "approx_prob_hike_25bp": round(p_hike, 2),
-                "note": "以近月 ZQ 期貨粗估（月內平均效應會稀釋機率），精確值請以 CME FedWatch 為準"}
-    except Exception:
+    """簡化版 FedWatch：用未來 1~3 個月的 30 天 Fed Funds 期貨（隱含利率 = 100 - 價格）對比目前有效利率。
+    近月合約在月底幾乎等於現行利率、沒有資訊量，所以改看次月與次次月。CME FedWatch 無免費 API，此為粗估。"""
+    if "DFF" in fred:
+        effr, src = fred["DFF"]["value"], "FRED 有效聯邦基金利率"
+    elif "^IRX" in mkt:
+        effr, src = mkt["^IRX"]["last"], "13 週國庫券殖利率（近似）"
+    else:
         return None
+    curve = []
+    try:
+        syms = _zq_symbols()
+        raw = yf.download([s for _, s in syms], period="5d", interval="1d", group_by="ticker",
+                          auto_adjust=True, progress=False, threads=True)
+        for month, sym in syms:
+            try:
+                px = float(raw[sym]["Close"].dropna().iloc[-1])
+            except Exception:
+                continue
+            implied = 100 - px
+            diff = (implied - effr) * 100
+            curve.append({"month": month, "contract": sym, "implied_rate": round(implied, 3),
+                          "vs_current_bp": round(diff, 1), "expected_25bp_moves": round(diff / 25, 2)})
+    except Exception as e:
+        log.warning("Fed Funds 期貨曲線失敗：%s", e)
+    if not curve and "ZQ=F" in mkt:   # 備援：連續近月合約
+        implied = 100 - mkt["ZQ=F"]["last"]
+        diff = (implied - effr) * 100
+        curve.append({"month": "front", "contract": "ZQ=F", "implied_rate": round(implied, 3),
+                      "vs_current_bp": round(diff, 1), "expected_25bp_moves": round(diff / 25, 2)})
+    if not curve:
+        return None
+    far = curve[-1]["expected_25bp_moves"]
+    return {"current_rate": effr, "current_rate_source": src, "futures_curve": curve,
+            "market_pricing": ("偏向降息" if far <= -0.3 else "偏向升息" if far >= 0.3 else "預期按兵不動"),
+            "note": "expected_25bp_moves 為負代表市場預期降息次數（例如 -0.6 ≈ 6 成機率降 1 碼）。粗估值，精確值以 CME FedWatch 為準"}
 
 
 def econ_calendar(tz: str) -> list[dict]:
