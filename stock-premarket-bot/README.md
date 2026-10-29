@@ -23,7 +23,7 @@
 | 你指定的來源 | 程式實際使用 | 說明 |
 |---|---|---|
 | FRED | ✅ FRED API / fredgraph CSV | GDP、非農、CPI/核心CPI、核心PCE、PPI、失業率、初領失業金、2Y/10Y、利差、零售銷售、耐久財、消費者信心、Fed 資產負債表、ON RRP、TGA、高收益債利差、淨流動性 |
-| CME FedWatch | ⚠️ 以 30 天 Fed Funds 期貨（ZQ=F）粗估 | CME 無免費 API |
+| CME FedWatch | ⚠️ 以未來 1–3 個月 30 天 Fed Funds 期貨曲線粗估升降息次數 | CME 無免費 API |
 | Investing.com / Trading Economics 財經日曆 | ✅ 改用 ForexFactory 公開週曆 JSON | Investing.com 有 Cloudflare 防爬 |
 | MacroMicro | ⚠️ 以自建「淨流動性」、殖利率曲線、信用利差替代 | 無公開 API |
 | Finviz | ✅ 個股快照（機構持股、空單、內部人、目標價、財報日） | 網頁抓取，失敗不影響主流程 |
@@ -52,7 +52,10 @@
 
 ### 3. 設定 Secrets
 repo → **Settings → Secrets and variables → Actions → New repository secret**，逐一加入上表金鑰。
-（選用）在同頁的 **Variables** 分頁新增 `ANTHROPIC_MODEL` 可指定模型，預設 `claude-sonnet-5-5`。
+（選用）在同頁的 **Variables** 分頁新增 `ANTHROPIC_MODEL` 可指定模型，預設 `claude-sonnet-5-5`；
+`ANTHROPIC_FALLBACK_MODEL` 為主模型連續過載時的備援模型，預設 `claude-opus-5-5`。
+
+> Claude 遇到伺服器過載會自動退避重試（20/45/90 秒）3 次，仍失敗才改用備援模型；再失敗則推送量化備援版並在報告中註明。
 
 ### 4. 測試
 repo → **Actions → Premarket Stock Report → Run workflow**，選市場、勾「立即執行」，約 5–10 分鐘後 Telegram 就會收到報告。
@@ -75,7 +78,7 @@ GitHub cron 只支援 UTC。workflow 為美股同時排了兩個時間：UTC 12:
 
 ## 測試開關（不必等排程）
 修改 repo 根目錄的 `.run-test`（內容隨意）並 commit，會立即強制執行一次並真的推播到 Telegram；
-commit 訊息含 `[tw]` 則測台股，否則測美股。執行 log 與報告會推到 `test-results` 分支，方便除錯。
+commit 訊息含 `[tw]` 則測台股，否則測美股；含 `[noforce]` 則走正式排程的時間窗與休市檢查（用來驗證排程邏輯）。執行 log 與報告會推到 `test-results` 分支，方便除錯。
 也可以在 Actions 頁面手動 Run workflow。
 
 ## 本機測試

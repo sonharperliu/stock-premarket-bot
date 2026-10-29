@@ -184,6 +184,35 @@ def parse_json(text: str) -> dict:
         return json.loads(fixed)
 
 
+def tw_tick(price: float) -> float:
+    """台股升降單位（證交所 / 櫃買中心股票）。"""
+    for limit, tick in ((10, 0.01), (50, 0.05), (100, 0.1), (500, 0.5), (1000, 1.0)):
+        if price < limit:
+            return tick
+    return 5.0
+
+
+def snap_tw_prices(p: dict) -> None:
+    """把價格對齊台股可下單的價位：進場區往內縮、停損與停利往下取（偏保守）。"""
+    import math
+
+    def down(x):
+        t = tw_tick(x)
+        return round(math.floor(x / t + 1e-9) * t, 2)
+
+    def up(x):
+        t = tw_tick(x)
+        return round(math.ceil(x / t - 1e-9) * t, 2)
+
+    for k in ("stop_loss", "entry_high", "take_profit_1", "take_profit_2"):
+        if isinstance(p.get(k), (int, float)):
+            p[k] = down(float(p[k]))
+    if isinstance(p.get("entry_low"), (int, float)):
+        p["entry_low"] = up(float(p["entry_low"]))
+    if p.get("entry_low") and p.get("entry_high") and p["entry_low"] > p["entry_high"]:
+        p["entry_low"] = p["entry_high"]
+
+
 def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
     """程式驗算：價格順序、停損距離（ATR 倍數）、風報比；不合格就套用 ATR 基準計畫並標註。"""
     fixed, seen = [], set()
@@ -231,6 +260,13 @@ def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
             p.update({k: base[k] for k in ("entry_low", "entry_high", "stop_loss", "take_profit_1", "take_profit_2")})
             rr = base["risk_reward"]
             notes.append("已改用 ATR 基準計畫")
+        if str(t).endswith((".TW", ".TWO")):
+            snap_tw_prices(p)
+            try:
+                mid = (p["entry_low"] + p["entry_high"]) / 2
+                rr = (p["take_profit_1"] - mid) / (mid - p["stop_loss"])
+            except Exception:
+                pass
         p["risk_reward"] = round(rr, 2)
         p["validation"] = "；".join(notes) if notes else "通過"
         p["atr14"] = atr_v
