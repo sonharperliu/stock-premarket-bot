@@ -26,7 +26,7 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
 6. 數據缺漏請明說，不可捏造任何數字或新聞。
 
 ## 輸出方式
-完成分析後，呼叫工具 submit_premarket_report 一次提交全部結果（不要另外輸出文字）。
+完成分析後，你必須呼叫工具 submit_premarket_report 一次提交全部結果，這是唯一的輸出方式（不要以文字回覆報告內容）。
 - picks 依信心排序，數量等於使用者指定數量（合格標的不足可少於指定數，並在報告說明）
 - conviction 為 1-5 整數；價格欄位為數字；position_size_pct 單檔不超過 10%，risk-off 時整體降低
 - thesis 2-3 句並引用具體數據；ticker 必須與 candidates 的 key 完全相同
@@ -79,7 +79,7 @@ def call_claude(data_pack: dict, market: str, n_picks: int) -> dict:
     # 串流 + 強制工具呼叫：API 保證回傳結構化 JSON，不再解析自由文字
     with client.messages.stream(model=ANTHROPIC_MODEL, max_tokens=32000, system=SYSTEM_PROMPT,
                                 tools=[REPORT_TOOL],
-                                tool_choice={"type": "tool", "name": REPORT_TOOL["name"]},
+                                tool_choice={"type": "auto"},   # 部分模型不支援強制指定工具；由系統提示要求呼叫
                                 messages=[{"role": "user", "content": user}]) as stream:
         resp = stream.get_final_message()
     log.info("Claude 用量：input=%s output=%s stop=%s", resp.usage.input_tokens, resp.usage.output_tokens,
