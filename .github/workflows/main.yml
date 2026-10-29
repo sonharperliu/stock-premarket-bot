@@ -11,7 +11,7 @@ on:
   # 測試開關：修改 repo 根目錄的 .run-test 並推送 → 立即強制執行一次（commit 訊息含 [tw] 則測台股）
   push:
     branches: [main]
-    paths: [".run-test"]   # commit 訊息含 [tw] 測台股、含 [noforce] 則走正式排程的時間窗/休市檢查
+    paths: [".run-test"]   # .run-test 內容第一個字為 us/tw；含 noforce 則走正式排程的時間窗/休市檢查
   workflow_dispatch:
     inputs:
       market:
@@ -44,8 +44,8 @@ jobs:
       group: premarket-${{ github.event.schedule == '15 0 * * 1-5' && 'tw' || inputs.market || 'us' }}
       cancel-in-progress: false
     env:
-      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (github.event_name == 'push' && (contains(github.event.head_commit.message, '[tw]') && 'tw' || 'us')) || (github.event.schedule == '15 0 * * 1-5' && 'tw' || 'us') }}
-      FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.force) || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[noforce]')) }}
+      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (github.event.schedule == '15 0 * * 1-5' && 'tw' || 'us') }}
+      FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,6 +54,16 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: stock-premarket-bot/requirements.txt
+
+      - name: 測試模式：從 .run-test 讀取市場與是否強制
+        if: github.event_name == 'push'
+        run: |
+          read -r M REST < ../.run-test || true
+          case "$M" in tw|us) ;; *) M=us ;; esac
+          F=true; case "$REST" in *noforce*) F=false ;; esac
+          echo "MARKET=$M" >> "$GITHUB_ENV"
+          echo "FORCE=$F" >> "$GITHUB_ENV"
+          echo "測試模式：market=$M force=$F"
 
       - name: 時間窗檢查（自動處理冬夏令）
         id: gate

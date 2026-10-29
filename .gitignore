@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+# 執行產生的報告不進版控（GitHub Actions 會以 artifact 保存）
+stock-premarket-bot/reports/*
+!stock-premarket-bot/reports/.gitkeep
+*.log
