@@ -213,6 +213,31 @@ def snap_tw_prices(p: dict) -> None:
         p["entry_low"] = p["entry_high"]
 
 
+PRICE_KEYS = ("entry_low", "entry_high", "stop_loss", "take_profit_1", "take_profit_2")
+MIN_RR = 1.5
+
+
+def _check_plan(p: dict, atr_v: float) -> tuple[bool, float, str]:
+    """回傳 (是否合格, 風報比, 不合格原因)。"""
+    try:
+        el, eh, sl = float(p["entry_low"]), float(p["entry_high"]), float(p["stop_loss"])
+        tp1 = float(p["take_profit_1"])
+        tp2 = float(p.get("take_profit_2") or tp1)
+    except Exception:
+        return False, 0.0, "價格欄位缺漏"
+    mid = (el + eh) / 2
+    rr = (tp1 - mid) / (mid - sl) if mid > sl else 0.0
+    if not (sl < el <= eh < tp1 <= tp2):
+        return False, rr, "價格順序不合理"
+    if atr_v:
+        dist = (mid - sl) / atr_v
+        if not 0.9 <= dist <= 3.2:
+            return False, rr, f"停損距離 {dist:.1f} ATR 超出範圍"
+    if rr < MIN_RR - 1e-9:
+        return False, rr, f"風報比 {rr:.2f} < {MIN_RR}"
+    return True, rr, ""
+
+
 def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
     """程式驗算：價格順序、停損距離（ATR 倍數）、風報比；不合格就套用 ATR 基準計畫並標註。"""
     fixed, seen = [], set()
@@ -236,37 +261,25 @@ def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
         tech = cand.get("technical", {})
         atr_v = tech.get("atr14") or 0
         notes = []
-        try:
-            el, eh, sl = float(p["entry_low"]), float(p["entry_high"]), float(p["stop_loss"])
-            tp1, tp2 = float(p["take_profit_1"]), float(p.get("take_profit_2") or p["take_profit_1"])
-            mid = (el + eh) / 2
-            ok = sl < el <= eh < tp1 <= tp2
-            if atr_v and ok:
-                dist = (mid - sl) / atr_v
-                ok = 0.9 <= dist <= 3.2
-                if not ok:
-                    notes.append(f"停損距離 {dist:.1f} ATR 超出範圍")
-            rr = (tp1 - mid) / (mid - sl) if mid > sl else 0
-            if ok and rr < 1.5:
-                notes.append(f"風報比 {rr:.2f} < 1.5")
-                ok = False
-        except Exception:
-            ok, rr = False, 0
-            notes.append("價格欄位缺漏")
-        if not ok:
-            base = tech.get("baseline_plan") or {}
-            if not base:
-                continue
-            p.update({k: base[k] for k in ("entry_low", "entry_high", "stop_loss", "take_profit_1", "take_profit_2")})
-            rr = base["risk_reward"]
-            notes.append("已改用 ATR 基準計畫")
-        if str(t).endswith((".TW", ".TWO")):
-            snap_tw_prices(p)
+        is_tw = str(t).endswith((".TW", ".TWO"))
+        for k in PRICE_KEYS:   # 先轉數字、台股先對齊升降單位，之後的驗算才是「實際可下單」的價格
             try:
-                mid = (p["entry_low"] + p["entry_high"]) / 2
-                rr = (p["take_profit_1"] - mid) / (mid - p["stop_loss"])
+                p[k] = float(p[k])
             except Exception:
                 pass
+        if is_tw:
+            snap_tw_prices(p)
+        ok, rr, why = _check_plan(p, atr_v)
+        if not ok:
+            notes.append(why)
+            base = dict(tech.get("baseline_plan") or {})
+            if not base:
+                continue
+            p.update({k: base[k] for k in PRICE_KEYS})
+            if is_tw:
+                snap_tw_prices(p)
+            _, rr, _ = _check_plan(p, atr_v)
+            notes.append("已改用 ATR 基準計畫")
         p["risk_reward"] = round(rr, 2)
         p["validation"] = "；".join(notes) if notes else "通過"
         p["atr14"] = atr_v
