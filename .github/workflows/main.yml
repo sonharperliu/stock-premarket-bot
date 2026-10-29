@@ -1,0 +1,76 @@
+name: Premarket Stock Report
+
+# GitHub cron 只支援 UTC。美股排兩個時間（分別對應夏令 EDT / 冬令 EST），
+# 程式會用 America/New_York 判斷哪一個才是「開盤前 10 分鐘」，另一個自動略過。
+# 提早約 30 分鐘啟動：預留資料抓取 + Claude 分析時間，並緩衝 GitHub 排程延遲，程式會等到準點才推播。
+on:
+  schedule:
+    - cron: "50 12 * * 1-5"   # 美股（夏令 EDT）= 紐約 08:50 啟動 → 09:20 推播
+    - cron: "50 13 * * 1-5"   # 美股（冬令 EST）= 紐約 08:50 啟動 → 09:20 推播
+    - cron: "15 0 * * 1-5"    # 台股 = 台北 08:15 啟動 → 08:50 推播
+  workflow_dispatch:
+    inputs:
+      market:
+        description: "市場"
+        type: choice
+        options: [us, tw]
+        default: us
+      force:
+        description: "立即執行（略過時間窗與休市檢查）"
+        type: boolean
+        default: true
+      dry_run:
+        description: "只印在 log，不發 Telegram"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    concurrency:
+      group: premarket-${{ github.event.schedule == '15 0 * * 1-5' && 'tw' || inputs.market || 'us' }}
+      cancel-in-progress: false
+    env:
+      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (github.event.schedule == '15 0 * * 1-5' && 'tw' || 'us') }}
+      FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 時間窗檢查（自動處理冬夏令）
+        id: gate
+        run: python gate.py "$MARKET" "$FORCE"
+
+      - name: 安裝套件
+        if: steps.gate.outputs.run == 'true'
+        run: pip install -r requirements.txt
+
+      - name: 執行分析並推播
+        if: steps.gate.outputs.run == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          ARGS="--market $MARKET"
+          if [ "$FORCE" = "true" ]; then ARGS="$ARGS --force"; fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python main.py $ARGS
+
+      - name: 保存報告
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ env.MARKET }}-${{ github.run_id }}
+          path: reports/
+          retention-days: 30
+          if-no-files-found: ignore
