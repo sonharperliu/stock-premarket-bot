@@ -92,7 +92,10 @@ def earnings_date(tk: yf.Ticker):
         cal = tk.calendar
         d = cal.get("Earnings Date") if isinstance(cal, dict) else None
         if d:
-            return str(d[0] if isinstance(d, list) else d)
+            from datetime import date
+            ds = d if isinstance(d, list) else [d]
+            future = [x for x in ds if hasattr(x, "year") and x >= date.today()]
+            return str(future[0]) if future else f"{ds[0]}（已公布）"
     except Exception:
         pass
     return None

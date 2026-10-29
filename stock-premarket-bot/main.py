@@ -116,7 +116,8 @@ def build_markdown(result: dict, market: str, stamp: str, cands: dict) -> str:
     m = MARKETS[market]
     md = [f"# {m['name']}盤前作戰報告 — {stamp}\n"]
     if result.get("report_markdown"):
-        md.append(result["report_markdown"])
+        import re
+        md.append(re.sub(r"\A\s*#\s[^\n]*\n", "", result["report_markdown"]))  # 去掉重複的大標題
     md.append("\n\n## 附錄：買賣點總表（程式驗算）\n")
     md.append("| # | 代號 | 名稱 | 進場區 | 停損 | 停利1 | 停利2 | R/R | ATR | 驗算 |")
     md.append("|---|---|---|---|---|---|---|---|---|---|")

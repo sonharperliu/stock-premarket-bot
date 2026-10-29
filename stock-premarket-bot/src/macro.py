@@ -42,6 +42,13 @@ def fred_dashboard() -> dict:
     except Exception as e:
         log.warning("FRED 無法連線，略過總經序列%s：%s",
                     "" if FRED_API_KEY else "（建議設定免費的 FRED_API_KEY）", e)
+        if not FRED_API_KEY:
+            try:  # 診斷：官方 API 端點是否可連（無金鑰會回 400，代表網路可達）
+                r = requests.get("https://api.stlouisfed.org/fred/series/observations",
+                                 params={"series_id": "DFF", "file_type": "json"}, timeout=8)
+                log.info("FRED 官方 API 可連線（HTTP %s）：設定 FRED_API_KEY 即可取得總經數據", r.status_code)
+            except Exception as e2:
+                log.info("FRED 官方 API 也無法連線：%s", e2)
         return {}
 
     def fetch(sid):
