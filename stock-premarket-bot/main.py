@@ -13,7 +13,6 @@ import logging
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 from pathlib import Path
 
 from src import analyzer, chips_tw, chips_us, fundamentals, macro, news, scanner, telegram, technicals, universe
@@ -23,6 +22,15 @@ from src.scheduler import check_window, is_trading_day, now_in, previous_trading
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("main")
 ROOT = Path(__file__).resolve().parent
+
+
+def safe(fn, default):
+    """單一資料源失敗不影響整體流程。"""
+    try:
+        return fn()
+    except Exception as e:
+        log.warning("資料源失敗（略過）：%s: %s", type(e).__name__, e)
+        return default
 
 
 def r2(x, nd=2):
@@ -45,6 +53,8 @@ def layer1(market: str):
     spy = prices["SPY"]["Close"] if "SPY" in prices else None
 
     stock_prices = {t: prices[t] for t in stocks["ticker"] if t in prices}
+    if len(stock_prices) < 20:
+        raise RuntimeError(f"只取得 {len(stock_prices)} 檔股價，Yahoo Finance 可能暫時限流，請稍後重跑")
     tab = scanner.score_table(stock_prices, bench)
     cands = scanner.pick_candidates(tab, DEEP_CANDIDATES[market], MIN_DOLLAR_VOLUME[market])
     sectors = scanner.sector_rotation(prices, sector_names, spy)
@@ -67,13 +77,13 @@ def layer2(market: str, cands, prices, meta, today) -> dict[str, dict]:
         name = str(meta.loc[t, "name"]) if t in meta.index else t
         d = {"name": name, "sector": str(meta.loc[t, "sector"]) if t in meta.index else "",
              "scan": {k: r2(v, 3) for k, v in cands.loc[t].items() if k != "unusual"} | {"unusual": bool(cands.loc[t, "unusual"])},
-             "technical": technicals.snapshot(prices[t])}
+             "technical": safe(lambda: technicals.snapshot(prices[t]), {})}
         try:
             d["fundamental"] = fundamentals.collect(t, us)
         except Exception as e:
             d["fundamental"] = {"error": str(e)}
         if us:
-            d["chips"] = chips_us.collect(t, last_day)
+            d["chips"] = safe(lambda: chips_us.collect(t, last_day), {})
         d["news"] = news.collect(t, name, market)
         return t, d
 
@@ -82,7 +92,7 @@ def layer2(market: str, cands, prices, meta, today) -> dict[str, dict]:
             out[t] = d
     if not us:
         codes = {t.split(".")[0] for t in out}
-        tw = chips_tw.collect(codes, today)
+        tw = safe(lambda: chips_tw.collect(codes, today), {})
         for t in out:
             out[t]["chips"] = tw.get(t.split(".")[0], {})
     log.info("第二層完成：%d 檔六維度資料", len(out))
@@ -121,6 +131,18 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="不發 Telegram，只印出")
     ap.add_argument("--no-llm", action="store_true", help="不呼叫 Claude（測試用）")
     a = ap.parse_args()
+    try:
+        run(a)
+    except Exception as e:
+        log.exception("執行失敗")
+        if not a.dry_run:
+            telegram.send([f"⚠️ <b>{MARKETS[a.market]['name']}盤前報告執行失敗</b>\n"
+                           f"<code>{telegram.e(type(e).__name__)}: {telegram.e(str(e)[:500])}</code>\n"
+                           f"請到 GitHub → Actions 查看完整 log。"])
+        return 1
+
+
+def run(a):
     market = a.market
 
     if not a.force:
@@ -139,8 +161,8 @@ def main():
     t0 = time.time()
     cands, prices, meta, sectors, etf_board, breadth = layer1(market)
     deep = layer2(market, cands, prices, meta, today)
-    mac = macro.collect(MARKETS[market]["tz"])
-    headlines = news.market_headlines(market)
+    mac = safe(lambda: macro.collect(MARKETS[market]["tz"]), {"markets": {}, "fred": {}})
+    headlines = safe(lambda: news.market_headlines(market), [])
 
     pack = {"as_of_local": local_now.isoformat(timespec="minutes"), "market": market,
             "macro": mac, "market_breadth": breadth, "sector_rotation_11": sectors,
@@ -168,9 +190,13 @@ def main():
     else:
         try:
             result = analyzer.call_claude(pack, market, n)
+        except analyzer.ClaudeParseError as e:
+            log.error("Claude 回應 JSON 解析失敗：%s", e)
+            result = analyzer.fallback_result(deep, n, "回應格式解析失敗，完整 AI 報告見附檔")
+            result["report_markdown"] = e.report
         except Exception as e:
             log.exception("Claude 失敗")
-            result = analyzer.fallback_result(deep, n, f"{type(e).__name__}")
+            result = analyzer.fallback_result(deep, n, f"{type(e).__name__}: {str(e)[:120]}")
     result = analyzer.validate_picks(result, deep)
 
     md_path = ROOT / "reports" / f"{market}_{today}_report.md"

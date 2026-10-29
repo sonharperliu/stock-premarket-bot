@@ -17,6 +17,13 @@ def e(x) -> str:
     return html.escape(str(x if x is not None else "—"))
 
 
+def stars(x) -> str:
+    try:
+        return "⭐" * max(0, min(5, int(float(x))))
+    except Exception:
+        return e(x)
+
+
 def fmt_price(x) -> str:
     try:
         x = float(x)
@@ -51,7 +58,7 @@ def render_messages(result: dict, market: str, stamp: str, macro_line: str) -> l
         score_line = " ".join(f"{lbl}{sc.get(k, '-')}" for k, lbl in
                               [("macro", "總經"), ("fundamental", "基本"), ("moat", "護城"), ("technical", "技術"),
                                ("chips", "籌碼"), ("news", "消息")]) if sc else ""
-        b = [f"<b>{p.get('rank', '')}. {e(p.get('ticker'))} {e(p.get('name', ''))}</b>  {'⭐' * int(p.get('conviction') or 0)}",
+        b = [f"<b>{p.get('rank', '')}. {e(p.get('ticker'))} {e(p.get('name', ''))}</b>  {stars(p.get('conviction'))}",
              f"型態：{e(p.get('setup', ''))}｜持有：{e(p.get('holding_period', ''))}｜部位：{e(p.get('position_size_pct', '—'))}%",
              f"🎯 進場 <b>{fmt_price(p.get('entry_low'))} – {fmt_price(p.get('entry_high'))}</b>",
              f"🛑 停損 <b>{fmt_price(p.get('stop_loss'))}</b>　✅ 停利 {fmt_price(p.get('take_profit_1'))} / {fmt_price(p.get('take_profit_2'))}",

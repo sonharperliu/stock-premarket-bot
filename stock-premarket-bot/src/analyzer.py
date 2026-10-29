@@ -25,13 +25,13 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
    - 不追高：進場區上緣原則上不高於昨收 + 0.3 ATR
 6. 數據缺漏請明說，不可捏造任何數字或新聞。
 
-## 輸出格式
-只輸出一個 JSON 物件（不要有任何其他文字、不要 markdown 圍欄），結構如下：
+## 輸出格式（嚴格遵守，分兩段）
+第一段：<json> 與 </json> 之間放一個合法 JSON 物件（字串內不可有未跳脫的雙引號與換行），結構如下：
 {
   "market_regime": {"stance": "risk-on|neutral|risk-off", "summary": "3-4 句總經與資金面結論", "key_points": ["…", "…", "…"]},
   "sector_view": [{"sector": "名稱", "stance": "超配|中性|低配", "reason": "一句話"}],
   "picks": [{
-     "ticker": "代號(與輸入相同)", "name": "名稱", "rank": 1, "conviction": 1-5,
+     "ticker": "代號(與輸入 candidates 的 key 完全相同)", "name": "名稱", "rank": 1, "conviction": 1,
      "setup": "突破 / 回測支撐 / 趨勢延續 / 反轉 等",
      "thesis": "2-3 句核心論點，需引用具體數據",
      "scores": {"macro": 0, "fundamental": 0, "moat": 0, "technical": 0, "chips": 0, "news": 0},
@@ -41,10 +41,13 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
      "catalysts": ["…"], "key_risks": ["…"]
   }],
   "avoid": [{"ticker": "…", "reason": "一句話"}],
-  "events_today": ["時間 事件 — 對盤面可能影響"],
-  "report_markdown": "完整繁體中文 Markdown 報告：一、總經與流動性 二、板塊輪動 三、精選標的逐檔分析（含六維度表格與買賣點）四、今日事件與風險 五、操作策略與部位建議"
+  "events_today": ["時間 事件 — 對盤面可能影響"]
 }
-picks 依信心排序，數量必須剛好等於使用者指定的數量（若合格標的不足，可少於指定數並在報告說明）。position_size_pct 為建議占總資金百分比，單檔不超過 10%，且 risk-off 時整體應降低。全部使用繁體中文。"""
+conviction 為 1-5 的整數；價格欄位為數字。picks 依信心排序，數量等於使用者指定數量（合格標的不足可以少於指定數，並在報告說明）。position_size_pct 為建議占總資金百分比，單檔不超過 10%，risk-off 時整體應降低。
+
+第二段：<report> 與 </report> 之間放完整繁體中文 Markdown 報告：一、總經與流動性 二、板塊輪動 三、精選標的逐檔分析（含六維度評分表與買賣點）四、今日事件與風險 五、操作策略與部位建議。
+
+兩段以外不要輸出任何文字。全部使用繁體中文。"""
 
 
 def _compact(obj) -> str:
@@ -56,13 +59,37 @@ def call_claude(data_pack: dict, market: str, n_picks: int) -> dict:
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, max_retries=3, timeout=600)
     user = (f"市場：{'美股' if market == 'us' else '台股'}。請從 candidates 中選出最終 {n_picks} 檔做多標的。\n"
             f"以下是盤前數據包（JSON）：\n{_compact(data_pack)}")
-    resp = client.messages.create(
-        model=ANTHROPIC_MODEL, max_tokens=16000, system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user}],
-    )
+    # 用串流呼叫：長輸出不會被 HTTP 逾時中斷
+    with client.messages.stream(model=ANTHROPIC_MODEL, max_tokens=16000, system=SYSTEM_PROMPT,
+                                messages=[{"role": "user", "content": user}]) as stream:
+        resp = stream.get_final_message()
     text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
-    log.info("Claude 用量：input=%s output=%s", resp.usage.input_tokens, resp.usage.output_tokens)
-    return parse_json(text)
+    log.info("Claude 用量：input=%s output=%s stop=%s", resp.usage.input_tokens, resp.usage.output_tokens,
+             resp.stop_reason)
+    return parse_response(text)
+
+
+def parse_response(text: str) -> dict:
+    """解析 <json>…</json> + <report>…</report>。JSON 壞掉時仍保留報告文字，由呼叫端決定備援。"""
+    report = ""
+    m = re.search(r"<report>(.*?)(?:</report>|$)", text, re.S)
+    if m:
+        report = m.group(1).strip()
+    m = re.search(r"<json>(.*?)</json>", text, re.S)
+    body = m.group(1) if m else text.split("<report>")[0]
+    try:
+        result = parse_json(body)
+    except Exception as e:
+        raise ClaudeParseError(str(e), report) from e
+    if report:
+        result["report_markdown"] = report
+    return result
+
+
+class ClaudeParseError(ValueError):
+    def __init__(self, msg: str, report: str):
+        super().__init__(msg)
+        self.report = report
 
 
 def parse_json(text: str) -> dict:
@@ -71,18 +98,36 @@ def parse_json(text: str) -> dict:
     if m:
         text = m.group(1)
     start, end = text.find("{"), text.rfind("}")
-    return json.loads(text[start:end + 1])
+    raw = text[start:end + 1]
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # 常見瑕疵修補：字串內的實際換行、結尾多餘逗號
+        fixed = re.sub(r",\s*([}\]])", r"\1", raw)
+        fixed = re.sub(r'"(?:[^"\\]|\\.)*"', lambda mm: mm.group(0).replace("\n", "\\n"), fixed)
+        return json.loads(fixed)
 
 
 def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
     """程式驗算：價格順序、停損距離（ATR 倍數）、風報比；不合格就套用 ATR 基準計畫並標註。"""
-    fixed = []
-    for p in result.get("picks", []):
-        t = p.get("ticker")
-        cand = candidates.get(t)
+    fixed, seen = [], set()
+    alias = {}
+    for k in candidates:  # 允許 2330 / 2330.TW / brk.b 等寫法
+        for a in {k, k.upper(), k.split(".")[0], k.replace("-", ".")}:
+            alias.setdefault(a.upper(), k)
+    for p in result.get("picks", []) or []:
+        if not isinstance(p, dict):
+            continue
+        t = alias.get(str(p.get("ticker", "")).strip().upper())
+        if t and t in seen:
+            continue
+        p["ticker"] = t or p.get("ticker")
+        cand = candidates.get(t) if t else None
         if not cand:
             log.warning("Claude 回傳了不在候選名單的代號 %s，已剔除", t)
             continue
+        seen.add(t)
+        p.setdefault("name", cand.get("name", t))
         tech = cand.get("technical", {})
         atr_v = tech.get("atr14") or 0
         notes = []
@@ -114,6 +159,8 @@ def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
         p["validation"] = "；".join(notes) if notes else "通過"
         p["atr14"] = atr_v
         fixed.append(p)
+    for i, p in enumerate(fixed, 1):
+        p["rank"] = i
     result["picks"] = fixed
     return result
 

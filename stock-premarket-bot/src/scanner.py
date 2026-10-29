@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 
 import numpy as np
 import pandas as pd
@@ -17,11 +18,17 @@ def download(tickers: list[str], period: str = "1y", chunk: int = 120) -> dict[s
     out: dict[str, pd.DataFrame] = {}
     for i in range(0, len(tickers), chunk):
         part = tickers[i:i + chunk]
-        try:
-            raw = yf.download(part, period=period, interval="1d", group_by="ticker", auto_adjust=True,
-                              threads=True, progress=False)
-        except Exception as e:
-            log.warning("下載失敗 %s...：%s", part[:3], e)
+        raw = None
+        for attempt in range(3):  # Yahoo 限流時退避重試
+            try:
+                raw = yf.download(part, period=period, interval="1d", group_by="ticker", auto_adjust=True,
+                                  threads=True, progress=False)
+                if raw is not None and not raw.empty:
+                    break
+            except Exception as e:
+                log.warning("下載失敗 %s...（第 %d 次）：%s", part[:3], attempt + 1, e)
+            time.sleep(5 * (attempt + 1))
+        if raw is None or raw.empty:
             continue
         for t in part:
             try:
@@ -70,9 +77,9 @@ def score_table(prices: dict[str, pd.DataFrame], bench: pd.Series | None) -> pd.
             rows.append({"ticker": t, **metrics(df, bench)})
         except Exception:
             pass
+    if not rows:
+        return pd.DataFrame()
     tab = pd.DataFrame(rows).set_index("ticker")
-    if tab.empty:
-        return tab
     # 綜合強勢分數：相對強弱 + 量能 + 資金流 + 趨勢位置
     tab["score"] = (0.25 * _z(tab["rs20"]) + 0.20 * _z(tab["rs60"]) + 0.15 * _z(np.log(tab["vol_ratio"].clip(0.1)))
                     + 0.15 * _z(tab["cmf20"].fillna(0)) + 0.15 * _z(tab["near_high"])

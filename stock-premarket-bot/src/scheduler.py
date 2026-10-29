@@ -8,6 +8,7 @@ GitHub Actions 的 cron 只吃 UTC，無法表達「紐約時間 09:20」。
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -62,8 +63,23 @@ def _extra_closures(market: str) -> set[date]:
     return out
 
 
+@lru_cache(maxsize=4)
 def _twse_holidays(year: int) -> dict[date, str]:
-    """證交所官方休市日（含春節前後『無交易僅交割』日）。"""
+    """證交所官方休市日（含春節前後『無交易僅交割』日）。失敗回傳空 dict 並快取，避免重複等待逾時。"""
+    try:
+        return _fetch_twse_holidays(year)
+    except Exception as e:
+        log.warning("證交所休市日 API 失敗（改用交易所行事曆）：%s", e)
+        return {}
+
+
+@lru_cache(maxsize=2)
+def _calendar(name: str):
+    import pandas_market_calendars as mcal
+    return mcal.get_calendar(name)
+
+
+def _fetch_twse_holidays(year: int) -> dict[date, str]:
     import requests
     from .config import HTTP_HEADERS
     url = "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule"
@@ -92,20 +108,16 @@ def is_trading_day(market: str, d: date) -> tuple[bool, str]:
     if d in _extra_closures(market):
         return False, "手動設定休市（data/*_extra_closures.txt）"
     try:
-        import pandas_market_calendars as mcal
-        cal = mcal.get_calendar(MARKETS[market]["calendar"])
+        cal = _calendar(MARKETS[market]["calendar"])
         days = cal.valid_days(start_date=d, end_date=d)
         if len(days) == 0:
             return False, f"{MARKETS[market]['calendar']} 交易所行事曆：休市日"
     except Exception as e:  # 套件出錯就退回只看週末，不要因此漏推
         log.warning("pandas_market_calendars 檢查失敗：%s", e)
     if market == "tw":
-        try:
-            hol = _twse_holidays(d.year)
-            if d in hol:
-                return False, f"證交所公告休市：{hol[d]}"
-        except Exception as e:
-            log.warning("證交所休市日 API 失敗：%s", e)
+        hol = _twse_holidays(d.year)
+        if d in hol:
+            return False, f"證交所公告休市：{hol[d]}"
     return True, "交易日"
 
 

@@ -31,9 +31,19 @@ def _num(x):
         return None
 
 
+def _field(fields: list[str], *preds) -> int:
+    """依序用多個條件找欄位位置；證交所偶爾改欄位名稱，找不到就丟出可讀的錯誤。"""
+    for pred in preds:
+        for i, f in enumerate(fields):
+            if pred(f):
+                return i
+    raise KeyError(f"T86 欄位格式改變：{fields}")
+
+
 def _twse(path: str, d: date, **params) -> list[tuple[list, list]]:
     r = S.get(f"https://www.twse.com.tw/rwd/zh/{path}", params={"date": f"{d:%Y%m%d}", "response": "json", **params},
               timeout=20)
+    r.raise_for_status()
     j = r.json()
     if j.get("stat") not in ("OK", None) and "tables" not in j:
         return []
@@ -44,25 +54,28 @@ def _twse(path: str, d: date, **params) -> list[tuple[list, list]]:
 
 def institutional(codes: set[str], last_day: date, days: int = 5) -> dict[str, dict]:
     out = {c: {"foreign": [], "trust": [], "dealer": []} for c in codes}
-    d, got = last_day, 0
-    while got < days:
+    d, got, fails = last_day, 0, 0
+    for _ in range(days + 4):          # 最多嘗試 days+4 次，避免證交所擋 IP 時無限迴圈
+        if got >= days or fails >= 3:
+            break
         try:
             tables = _twse("fund/T86", d, selectType="ALLBUT0999")
+            if tables:
+                fields, data = tables[0]
+                fi = _field(fields, lambda f: "外陸資買賣超股數" in f and "不含" in f, lambda f: "外資" in f and "買賣超" in f)
+                ti = _field(fields, lambda f: f.startswith("投信買賣超"))
+                di = _field(fields, lambda f: f.startswith("自營商買賣超股數") and "(" not in f,
+                            lambda f: f.startswith("自營商買賣超"))
+                for row in data:
+                    c = str(row[0]).strip()
+                    if c in out:
+                        out[c]["foreign"].append(_num(row[fi]) or 0)
+                        out[c]["trust"].append(_num(row[ti]) or 0)
+                        out[c]["dealer"].append(_num(row[di]) or 0)
+                got += 1
         except Exception as e:
+            fails += 1
             log.warning("T86 %s 失敗：%s", d, e)
-            tables = []
-        if tables:
-            fields, data = tables[0]
-            fi = next(i for i, f in enumerate(fields) if "外陸資買賣超股數" in f and "不含" in f)
-            ti = next(i for i, f in enumerate(fields) if f.startswith("投信買賣超"))
-            di = next(i for i, f in enumerate(fields) if f.startswith("自營商買賣超股數") and "(" not in f)
-            for row in data:
-                c = row[0].strip()
-                if c in out:
-                    out[c]["foreign"].append(_num(row[fi]) or 0)
-                    out[c]["trust"].append(_num(row[ti]) or 0)
-                    out[c]["dealer"].append(_num(row[di]) or 0)
-            got += 1
         d = previous_trading_day("tw", d)
         time.sleep(2.5)   # 證交所有頻率限制
     res = {}
@@ -142,12 +155,20 @@ def shareholder_distribution(codes: set[str]) -> dict[str, dict]:
         return {}
 
 
+def _safe(fn, *a) -> dict:
+    try:
+        return fn(*a)
+    except Exception as e:
+        log.warning("%s 失敗：%s", fn.__name__, e)
+        return {}
+
+
 def collect(codes: set[str], today: date) -> dict[str, dict]:
     last = previous_trading_day("tw", today)
-    inst = institutional(codes, last)
-    mar = margin(codes, last)
-    val = valuation_and_revenue(codes)
-    dist = shareholder_distribution(codes)
+    inst = _safe(institutional, codes, last)
+    mar = _safe(margin, codes, last)
+    val = _safe(valuation_and_revenue, codes)
+    dist = _safe(shareholder_distribution, codes)
     return {c: {"institutional": inst.get(c, "N/A（上櫃或無資料）"), "margin": mar.get(c, "N/A"),
                 "valuation_revenue": val.get(c, {}), "shareholder_distribution": dist.get(c, {}),
                 "data_as_of": last.isoformat()} for c in codes}
