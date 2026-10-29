@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
@@ -54,15 +55,36 @@ def google_news(query: str, lang: str = "en", n: int = 6, hours: int = 72) -> li
     return out
 
 
+_SUFFIX = re.compile(r"[,.]?\s+(inc|corp|corporation|co|company|ltd|plc|group|holdings|class [a-c]|n\.?v|s\.?a|ag|se)\.?$", re.I)
+
+
+def short_name(name: str) -> str:
+    n = re.sub(r"\(.*?\)", "", (name or "").replace("*", "").split("-KY")[0]).strip()
+    for _ in range(3):
+        n = _SUFFIX.sub("", n).strip(" ,.")
+    return n
+
+
+def _relevant(title: str, keys: list[str]) -> bool:
+    t = (title or "").lower()
+    return any(k and k.lower() in t for k in keys)
+
+
 def collect(ticker: str, name: str, market: str) -> list[dict]:
+    """只保留標題確實提到公司名稱或代號的新聞（Yahoo 對個股常回傳大盤新聞）。"""
+    sn = short_name(name)
     if market == "us":
-        items = yahoo_news(ticker) or google_news(f"{ticker} stock")
+        keys = [sn, sn.split()[0] if sn and len(sn.split()[0]) >= 4 else "", f"({ticker})", f" {ticker} "]
+        items = google_news(f'"{sn}" stock' if sn and sn != ticker else f"{ticker} stock", "en", 10) + yahoo_news(ticker, 10)
     else:
-        items = google_news(f"{name} 股票", "zh") + yahoo_news(ticker, 3)
+        code = ticker.split(".")[0]
+        keys = [sn, code]
+        items = google_news(f"{sn} {code}", "zh", 10) + yahoo_news(ticker, 5)
     seen, uniq = set(), []
     for it in items:
-        k = (it.get("title") or "")[:40]
-        if k and k not in seen:
+        title = it.get("title") or ""
+        k = title[:40]
+        if k and k not in seen and _relevant(f" {title} ", keys):
             seen.add(k)
             uniq.append(it)
     return uniq[:8]

@@ -19,6 +19,10 @@ from src import analyzer, chips_tw, chips_us, fundamentals, macro, news, scanner
 from src.config import ANTHROPIC_API_KEY, DEEP_CANDIDATES, FINAL_PICKS, MARKETS, MIN_DOLLAR_VOLUME
 from src.scheduler import check_window, is_trading_day, now_in, previous_trading_day, push_time
 
+import warnings
+warnings.filterwarnings("ignore")                       # yfinance / pandas 的 FutureWarning 會淹沒 log
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)  # 個別代號下載失敗已由程式處理
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("main")
 ROOT = Path(__file__).resolve().parent

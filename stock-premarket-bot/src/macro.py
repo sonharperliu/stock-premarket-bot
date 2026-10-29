@@ -15,18 +15,18 @@ from .config import FRED_API_KEY, FRED_SERIES, HTTP_HEADERS, MARKET_TICKERS
 log = logging.getLogger(__name__)
 
 
-def _fred_series(sid: str) -> pd.Series:
+def _fred_series(sid: str, timeout: int = 10) -> pd.Series:
     if FRED_API_KEY:
         r = requests.get("https://api.stlouisfed.org/fred/series/observations",
                          params={"series_id": sid, "api_key": FRED_API_KEY, "file_type": "json",
-                                 "sort_order": "desc", "limit": 30}, timeout=20)
+                                 "sort_order": "desc", "limit": 30}, timeout=timeout)
         r.raise_for_status()
         obs = r.json()["observations"]
         s = pd.Series({o["date"]: o["value"] for o in obs})
     else:  # 免金鑰公開 CSV
         start = (datetime.utcnow() - timedelta(days=900)).strftime("%Y-%m-%d")
         r = requests.get("https://fred.stlouisfed.org/graph/fredgraph.csv",
-                         params={"id": sid, "cosd": start}, headers=HTTP_HEADERS, timeout=20)
+                         params={"id": sid, "cosd": start}, headers=HTTP_HEADERS, timeout=timeout)
         r.raise_for_status()
         df = pd.read_csv(io.StringIO(r.text))
         s = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0].values)
@@ -35,10 +35,30 @@ def _fred_series(sid: str) -> pd.Series:
 
 
 def fred_dashboard() -> dict:
+    """先用一個序列探測連線（熔斷），可連線才平行抓全部；連不到就整組跳過，不浪費時間。"""
+    from concurrent.futures import ThreadPoolExecutor
+    try:
+        _fred_series("DFF", timeout=8)
+    except Exception as e:
+        log.warning("FRED 無法連線，略過總經序列%s：%s",
+                    "" if FRED_API_KEY else "（建議設定免費的 FRED_API_KEY）", e)
+        return {}
+
+    def fetch(sid):
+        try:
+            return sid, _fred_series(sid)
+        except Exception as e:
+            log.warning("FRED %s 失敗：%s", sid, e)
+            return sid, None
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        series = dict(ex.map(fetch, FRED_SERIES))
     out = {}
     for sid, (label, mode) in FRED_SERIES.items():
+        s = series.get(sid)
+        if s is None or len(s) < 2:
+            continue
         try:
-            s = _fred_series(sid)
             last, prev = s.iloc[-1], s.iloc[-2]
             item = {"name": label, "date": s.index[-1], "value": round(float(last), 3), "prev": round(float(prev), 3)}
             if mode == "diff":
@@ -52,7 +72,7 @@ def fred_dashboard() -> dict:
                 item["yoy_pct"] = round(float((last / s.iloc[-5] - 1) * 100), 2)
             out[sid] = item
         except Exception as e:
-            log.warning("FRED %s 失敗：%s", sid, e)
+            log.warning("FRED %s 計算失敗：%s", sid, e)
     # 淨流動性 = Fed 資產 - TGA - ON RRP（單位換算成十億）
     try:
         net = out["WALCL"]["value"] / 1000 - out["WTREGEN"]["value"] / 1000 - out["RRPONTSYD"]["value"]
@@ -86,7 +106,7 @@ def fed_expectation(fred: dict, mkt: dict) -> dict | None:
     CME FedWatch 無免費 API，此為粗估，僅供方向判斷。"""
     try:
         implied = 100 - mkt["ZQ=F"]["last"]
-        effr = fred["DFF"]["value"]
+        effr = fred["DFF"]["value"] if "DFF" in fred else mkt["^IRX"]["last"]
         diff_bp = (implied - effr) * 100
         p_cut = max(0.0, min(1.0, -diff_bp / 25))
         p_hike = max(0.0, min(1.0, diff_bp / 25))

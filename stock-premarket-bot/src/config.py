@@ -3,10 +3,10 @@ import os
 
 # ---- API Keys（GitHub Secrets）----
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL") or "claude-sonnet-5-5"   # 未設定或空字串都用預設
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
-FRED_API_KEY = os.getenv("FRED_API_KEY", "")  # 可選；沒有就改用 fredgraph.csv 公開端點
+FRED_API_KEY = (os.getenv("FRED_API_KEY") or "").strip()  # 可選；沒有就改用 fredgraph.csv 公開端點
 
 # ---- 推播時間 ----
 LEAD_MINUTES = 10           # 開盤前幾分鐘推播
@@ -91,7 +91,8 @@ MARKET_TICKERS = {
     "ES=F": "S&P期貨", "NQ=F": "那指期貨", "YM=F": "道瓊期貨", "RTY=F": "羅素期貨", "^VIX": "VIX",
     "DX-Y.NYB": "美元指數", "^TNX": "10年殖利率", "CL=F": "WTI原油", "GC=F": "黃金", "HG=F": "銅",
     "BTC-USD": "比特幣", "^SOX": "費半", "TWD=X": "美元/台幣", "^TWII": "加權指數", "JPY=X": "美元/日圓",
-    "ZQ=F": "30天Fed Funds期貨",
+    "ZQ=F": "30天Fed Funds期貨", "^IRX": "13週國庫券殖利率", "^FVX": "5年殖利率", "^TYX": "30年殖利率",
+    "HYG": "高收益債ETF", "LQD": "投資級債ETF",
 }
 
 HTTP_HEADERS = {
