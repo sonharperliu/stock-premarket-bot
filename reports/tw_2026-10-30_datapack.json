@@ -1,0 +1,2665 @@
+{
+ "as_of_local": "2026-10-30T22:28+08:00",
+ "market": "tw",
+ "macro": {
+  "fred": {
+   "GDPC1": {
+    "name": "實質GDP",
+    "date": "2026-07-01",
+    "value": 24611.077,
+    "prev": 24408.011,
+    "yoy_pct": 2.07,
+    "qoq_saar_pct": 3.37
+   },
+   "PAYEMS": {
+    "name": "非農就業(千人)",
+    "date": "2026-09-01",
+    "value": 159044.0,
+    "prev": 159015.0,
+    "change": 29.0
+   },
+   "UNRATE": {
+    "name": "失業率%",
+    "date": "2026-09-01",
+    "value": 4.2,
+    "prev": 4.1
+   },
+   "ICSA": {
+    "name": "初領失業金",
+    "date": "2026-10-24",
+    "value": 194000.0,
+    "prev": 195000.0
+   },
+   "CPIAUCSL": {
+    "name": "CPI",
+    "date": "2026-09-01",
+    "value": 336.298,
+    "prev": 334.131,
+    "yoy_pct": 4.02,
+    "prev_yoy_pct": 3.71
+   },
+   "CPILFESL": {
+    "name": "核心CPI",
+    "date": "2026-09-01",
+    "value": 338.896,
+    "prev": 337.765,
+    "yoy_pct": 2.79,
+    "prev_yoy_pct": 2.76
+   },
+   "PCEPILFE": {
+    "name": "核心PCE",
+    "date": "2026-09-01",
+    "value": 130.902,
+    "prev": 130.489,
+    "yoy_pct": 3.12,
+    "prev_yoy_pct": 3.03
+   },
+   "PPIFIS": {
+    "name": "PPI最終需求",
+    "date": "2026-09-01",
+    "value": 159.78,
+    "prev": 157.662,
+    "yoy_pct": 6.35,
+    "prev_yoy_pct": 5.58
+   },
+   "RSAFS": {
+    "name": "零售銷售",
+    "date": "2026-09-01",
+    "value": 745021.0,
+    "prev": 739322.0,
+    "mom_pct": 0.77
+   },
+   "DGORDER": {
+    "name": "耐久財訂單",
+    "date": "2026-09-01",
+    "value": 345371.0,
+    "prev": 339117.0,
+    "mom_pct": 1.84
+   },
+   "UMCSENT": {
+    "name": "密大消費者信心",
+    "date": "2026-09-01",
+    "value": 48.1,
+    "prev": 51.7
+   },
+   "DFF": {
+    "name": "有效聯邦基金利率",
+    "date": "2026-10-28",
+    "value": 3.88,
+    "prev": 3.88
+   },
+   "DFEDTARU": {
+    "name": "聯邦基金目標上限",
+    "date": "2026-10-30",
+    "value": 4.0,
+    "prev": 4.0
+   },
+   "DGS2": {
+    "name": "2年期殖利率",
+    "date": "2026-10-28",
+    "value": 4.67,
+    "prev": 4.7
+   },
+   "DGS10": {
+    "name": "10年期殖利率",
+    "date": "2026-10-28",
+    "value": 5.05,
+    "prev": 4.99
+   },
+   "T10Y2Y": {
+    "name": "10Y-2Y利差",
+    "date": "2026-10-29",
+    "value": 0.37,
+    "prev": 0.38
+   },
+   "T10Y3M": {
+    "name": "10Y-3M利差",
+    "date": "2026-10-29",
+    "value": 0.8,
+    "prev": 0.87
+   },
+   "WALCL": {
+    "name": "Fed資產負債表(百萬)",
+    "date": "2026-10-28",
+    "value": 6745635.0,
+    "prev": 6753604.0,
+    "change": -7969.0
+   },
+   "RRPONTSYD": {
+    "name": "隔夜逆回購ON RRP(十億)",
+    "date": "2026-10-29",
+    "value": 0.353,
+    "prev": 0.176
+   },
+   "WTREGEN": {
+    "name": "財政部TGA(百萬)",
+    "date": "2026-10-28",
+    "value": 999727.0,
+    "prev": 952002.0
+   },
+   "BAMLH0A0HYM2": {
+    "name": "高收益債利差%",
+    "date": "2026-10-29",
+    "value": 3.26,
+    "prev": 3.14
+   },
+   "NFCI": {
+    "name": "芝加哥Fed金融狀況指數",
+    "date": "2026-10-23",
+    "value": -0.487,
+    "prev": -0.494
+   },
+   "NET_LIQUIDITY": {
+    "name": "美元淨流動性(十億) = Fed資產-TGA-RRP",
+    "value": 5745.6
+   }
+  },
+  "markets": {
+   "ES=F": {
+    "name": "S&P期貨",
+    "last": 7638.25,
+    "chg_1d_pct": -1.5,
+    "chg_5d_pct": -0.28
+   },
+   "NQ=F": {
+    "name": "那指期貨",
+    "last": 28690.5,
+    "chg_1d_pct": -2.95,
+    "chg_5d_pct": -1.47
+   },
+   "YM=F": {
+    "name": "道瓊期貨",
+    "last": 52109.0,
+    "chg_1d_pct": -0.77,
+    "chg_5d_pct": -0.54
+   },
+   "RTY=F": {
+    "name": "羅素期貨",
+    "last": 2827.5,
+    "chg_1d_pct": -1.39,
+    "chg_5d_pct": 1.54
+   },
+   "^VIX": {
+    "name": "VIX",
+    "last": 19.33,
+    "chg_1d_pct": 12.38,
+    "chg_5d_pct": -0.62
+   },
+   "DX-Y.NYB": {
+    "name": "美元指數",
+    "last": 102.048,
+    "chg_1d_pct": 0.01,
+    "chg_5d_pct": 0.23
+   },
+   "^TNX": {
+    "name": "10年殖利率",
+    "last": 4.935,
+    "chg_1d_pct": -1.08,
+    "chg_5d_pct": -1.06
+   },
+   "CL=F": {
+    "name": "WTI原油",
+    "last": 104.54,
+    "chg_1d_pct": 2.49,
+    "chg_5d_pct": 1.23
+   },
+   "GC=F": {
+    "name": "黃金",
+    "last": 3912.1,
+    "chg_1d_pct": -2.96,
+    "chg_5d_pct": -2.39
+   },
+   "HG=F": {
+    "name": "銅",
+    "last": 6.497,
+    "chg_1d_pct": -1.27,
+    "chg_5d_pct": 0.33
+   },
+   "BTC-USD": {
+    "name": "比特幣",
+    "last": 76728.508,
+    "chg_1d_pct": -1.35,
+    "chg_5d_pct": -4.12
+   },
+   "^SOX": {
+    "name": "費半",
+    "last": 10772.207,
+    "chg_1d_pct": -6.48,
+    "chg_5d_pct": -0.07
+   },
+   "TWD=X": {
+    "name": "美元/台幣",
+    "last": 32.6,
+    "chg_1d_pct": 0.67,
+    "chg_5d_pct": 0.01
+   },
+   "^TWII": {
+    "name": "加權指數",
+    "last": 45211.828,
+    "chg_1d_pct": -2.49,
+    "chg_5d_pct": -3.57
+   },
+   "JPY=X": {
+    "name": "美元/日圓",
+    "last": 157.263,
+    "chg_1d_pct": -0.36,
+    "chg_5d_pct": 0.49
+   },
+   "ZQ=F": {
+    "name": "30天Fed Funds期貨",
+    "last": 96.12,
+    "chg_1d_pct": 0.0,
+    "chg_5d_pct": 0.0
+   },
+   "^IRX": {
+    "name": "13週國庫券殖利率",
+    "last": 3.982,
+    "chg_1d_pct": -0.4,
+    "chg_5d_pct": -1.24
+   },
+   "^FVX": {
+    "name": "5年殖利率",
+    "last": 4.737,
+    "chg_1d_pct": -1.33,
+    "chg_5d_pct": -1.42
+   },
+   "^TYX": {
+    "name": "30年殖利率",
+    "last": 5.301,
+    "chg_1d_pct": -0.53,
+    "chg_5d_pct": -0.26
+   },
+   "HYG": {
+    "name": "高收益債ETF",
+    "last": 77.395,
+    "chg_1d_pct": -0.24,
+    "chg_5d_pct": 0.45
+   },
+   "LQD": {
+    "name": "投資級債ETF",
+    "last": 104.27,
+    "chg_1d_pct": 0.05,
+    "chg_5d_pct": 0.4
+   }
+  },
+  "fed_expectation": {
+   "current_rate": 3.88,
+   "current_rate_source": "FRED 有效聯邦基金利率",
+   "futures_curve": [
+    {
+     "month": "2026-11",
+     "contract": "ZQX26.CBT",
+     "implied_rate": 3.88,
+     "vs_current_bp": -0.0,
+     "expected_25bp_moves": -0.0
+    },
+    {
+     "month": "2026-12",
+     "contract": "ZQZ26.CBT",
+     "implied_rate": 4.01,
+     "vs_current_bp": 13.0,
+     "expected_25bp_moves": 0.52
+    },
+    {
+     "month": "2027-01",
+     "contract": "ZQF27.CBT",
+     "implied_rate": 4.075,
+     "vs_current_bp": 19.5,
+     "expected_25bp_moves": 0.78
+    }
+   ],
+   "market_pricing": "偏向升息",
+   "note": "expected_25bp_moves 為負代表市場預期降息次數（例如 -0.6 ≈ 6 成機率降 1 碼）。粗估值，精確值以 CME FedWatch 為準"
+  },
+  "econ_calendar_today_tomorrow": [
+   {
+    "time_local": "10-30 07:30",
+    "country": "JPY",
+    "event": "Tokyo Core CPI y/y",
+    "impact": "Medium",
+    "forecast": "2.6%",
+    "previous": "2.7%"
+   },
+   {
+    "time_local": "10-30 11:02",
+    "country": "JPY",
+    "event": "BOJ Outlook Report",
+    "impact": "High",
+    "forecast": "",
+    "previous": ""
+   },
+   {
+    "time_local": "10-30 11:02",
+    "country": "JPY",
+    "event": "BOJ Policy Rate",
+    "impact": "High",
+    "forecast": "<1.25%",
+    "previous": "<1.25%"
+   },
+   {
+    "time_local": "10-30 11:02",
+    "country": "JPY",
+    "event": "Monetary Policy Statement",
+    "impact": "High",
+    "forecast": "",
+    "previous": ""
+   },
+   {
+    "time_local": "10-30 14:30",
+    "country": "JPY",
+    "event": "BOJ Press Conference",
+    "impact": "High",
+    "forecast": "",
+    "previous": ""
+   },
+   {
+    "time_local": "10-30 15:29",
+    "country": "EUR",
+    "event": "German Prelim CPI m/m",
+    "impact": "Medium",
+    "forecast": "0.1%",
+    "previous": "0.6%"
+   },
+   {
+    "time_local": "10-30 17:00",
+    "country": "EUR",
+    "event": "German Prelim GDP q/q",
+    "impact": "Medium",
+    "forecast": "0.1%",
+    "previous": "0.2%"
+   },
+   {
+    "time_local": "10-30 20:30",
+    "country": "USD",
+    "event": "Employment Cost Index q/q",
+    "impact": "Medium",
+    "forecast": "0.8%",
+    "previous": "0.9%"
+   }
+  ]
+ },
+ "market_breadth": {
+  "universe_size": 116,
+  "pct_above_ma50": 44.0,
+  "pct_above_ma200": 71.6,
+  "advancers_pct": 20.7,
+  "unusual_volume_count": 7
+ },
+ "sector_rotation_11": [
+  {
+   "etf": "XLV",
+   "sector": "醫療保健",
+   "ret1d": 0.98,
+   "ret5d": 3.66,
+   "ret20d": 11.83,
+   "rs20_vs_bench": 13.34,
+   "vol_ratio": 0.65,
+   "cmf20_money_flow": 0.163,
+   "rank_score": 1.08
+  },
+  {
+   "etf": "XLE",
+   "sector": "能源",
+   "ret1d": 1.69,
+   "ret5d": 0.78,
+   "ret20d": 11.22,
+   "rs20_vs_bench": 12.74,
+   "vol_ratio": 0.34,
+   "cmf20_money_flow": 0.185,
+   "rank_score": 0.98
+  },
+  {
+   "etf": "XLP",
+   "sector": "必需消費",
+   "ret1d": 1.46,
+   "ret5d": 1.37,
+   "ret20d": 11.1,
+   "rs20_vs_bench": 12.61,
+   "vol_ratio": 0.6,
+   "cmf20_money_flow": 0.058,
+   "rank_score": 0.76
+  },
+  {
+   "etf": "XLB",
+   "sector": "原物料",
+   "ret1d": -0.19,
+   "ret5d": 2.18,
+   "ret20d": 7.31,
+   "rs20_vs_bench": 8.82,
+   "vol_ratio": 0.29,
+   "cmf20_money_flow": 0.421,
+   "rank_score": 0.55
+  },
+  {
+   "etf": "XLF",
+   "sector": "金融",
+   "ret1d": -0.56,
+   "ret5d": 1.29,
+   "ret20d": 5.85,
+   "rs20_vs_bench": 7.37,
+   "vol_ratio": 0.28,
+   "cmf20_money_flow": 0.199,
+   "rank_score": 0.22
+  },
+  {
+   "etf": "XLU",
+   "sector": "公用事業",
+   "ret1d": 0.85,
+   "ret5d": 2.22,
+   "ret20d": 9.23,
+   "rs20_vs_bench": 10.74,
+   "vol_ratio": 0.18,
+   "cmf20_money_flow": 0.297,
+   "rank_score": 0.16
+  },
+  {
+   "etf": "XLY",
+   "sector": "非必需消費",
+   "ret1d": -0.92,
+   "ret5d": 1.79,
+   "ret20d": 4.63,
+   "rs20_vs_bench": 6.14,
+   "vol_ratio": 0.36,
+   "cmf20_money_flow": 0.171,
+   "rank_score": 0.1
+  },
+  {
+   "etf": "XLRE",
+   "sector": "房地產",
+   "ret1d": 0.23,
+   "ret5d": 1.39,
+   "ret20d": 5.76,
+   "rs20_vs_bench": 7.27,
+   "vol_ratio": 0.33,
+   "cmf20_money_flow": 0.085,
+   "rank_score": 0.05
+  },
+  {
+   "etf": "XLI",
+   "sector": "工業",
+   "ret1d": -0.81,
+   "ret5d": 2.51,
+   "ret20d": -0.7,
+   "rs20_vs_bench": 0.81,
+   "vol_ratio": 0.32,
+   "cmf20_money_flow": 0.246,
+   "rank_score": -0.28
+  },
+  {
+   "etf": "XLK",
+   "sector": "科技",
+   "ret1d": -4.37,
+   "ret5d": -1.5,
+   "ret20d": -9.67,
+   "rs20_vs_bench": -8.15,
+   "vol_ratio": 0.45,
+   "cmf20_money_flow": 0.025,
+   "rank_score": -0.45
+  },
+  {
+   "etf": "XLC",
+   "sector": "通訊服務",
+   "ret1d": -0.8,
+   "ret5d": -4.84,
+   "ret20d": -8.99,
+   "rs20_vs_bench": -7.48,
+   "vol_ratio": 0.22,
+   "cmf20_money_flow": -0.07,
+   "rank_score": -1.15
+  },
+  {
+   "etf": "SMH",
+   "sector": "半導體",
+   "ret1d": -6.07,
+   "ret5d": 0.07,
+   "ret20d": -16.34,
+   "rs20_vs_bench": -14.82,
+   "vol_ratio": 0.31,
+   "cmf20_money_flow": -0.087,
+   "rank_score": -1.21
+  }
+ ],
+ "etf_board": [
+  {
+   "etf": "0056.TW",
+   "sector": "高股息",
+   "ret1d": -1.85,
+   "ret5d": -0.8,
+   "ret20d": 1.03,
+   "rs20_vs_bench": 7.36,
+   "vol_ratio": 1.56,
+   "cmf20_money_flow": 0.241,
+   "rank_score": 1.03
+  },
+  {
+   "etf": "00919.TW",
+   "sector": "精選高息",
+   "ret1d": -0.85,
+   "ret5d": 0.52,
+   "ret20d": 2.23,
+   "rs20_vs_bench": 8.56,
+   "vol_ratio": 1.19,
+   "cmf20_money_flow": 0.132,
+   "rank_score": 0.9
+  },
+  {
+   "etf": "00878.TW",
+   "sector": "永續高股息",
+   "ret1d": -1.39,
+   "ret5d": -1.3,
+   "ret20d": -0.26,
+   "rs20_vs_bench": 6.08,
+   "vol_ratio": 3.58,
+   "cmf20_money_flow": 0.034,
+   "rank_score": 0.87
+  },
+  {
+   "etf": "006208.TW",
+   "sector": "台灣50(富邦)",
+   "ret1d": -2.03,
+   "ret5d": -1.67,
+   "ret20d": -6.07,
+   "rs20_vs_bench": 0.27,
+   "vol_ratio": 3.05,
+   "cmf20_money_flow": -0.035,
+   "rank_score": -0.05
+  },
+  {
+   "etf": "0050.TW",
+   "sector": "台灣50",
+   "ret1d": -2.14,
+   "ret5d": -1.82,
+   "ret20d": -6.34,
+   "rs20_vs_bench": 0.0,
+   "vol_ratio": 2.19,
+   "cmf20_money_flow": -0.084,
+   "rank_score": -0.26
+  },
+  {
+   "etf": "00891.TW",
+   "sector": "半導體",
+   "ret1d": -2.62,
+   "ret5d": -1.04,
+   "ret20d": -9.01,
+   "rs20_vs_bench": -2.67,
+   "vol_ratio": 1.86,
+   "cmf20_money_flow": -0.032,
+   "rank_score": -0.36
+  },
+  {
+   "etf": "00892.TW",
+   "sector": "半導體",
+   "ret1d": -2.88,
+   "ret5d": -1.71,
+   "ret20d": -8.99,
+   "rs20_vs_bench": -2.65,
+   "vol_ratio": 1.02,
+   "cmf20_money_flow": 0.022,
+   "rank_score": -0.73
+  },
+  {
+   "etf": "00881.TW",
+   "sector": "5G科技",
+   "ret1d": -3.06,
+   "ret5d": -3.89,
+   "ret20d": -10.15,
+   "rs20_vs_bench": -3.82,
+   "vol_ratio": 1.67,
+   "cmf20_money_flow": -0.17,
+   "rank_score": -0.84
+  }
+ ],
+ "market_headlines": [
+  {
+   "title": "【1030台股盤前】開高走低震盪打底！聯準會按兵不動但Google財報帶崩，外資賣超約略688億，策略鎖定主本比【麗臺】、【眾達-KY】、【十銓】｜豐雲學堂2026 年 10 月 - 永豐金證券",
+   "source": "永豐金證券",
+   "time": "2026-10-30T00:16:38+00:00"
+  },
+  {
+   "title": "夜盤重挫成前兆！台股早盤狂瀉1400點 跌破4萬5大關 - Yahoo股市",
+   "source": "Yahoo股市",
+   "time": "2026-10-30T01:41:31+00:00"
+  },
+  {
+   "title": "利空包圍 台指期夜盤上半場一度再破底 - 經濟日報",
+   "source": "經濟日報",
+   "time": "2026-10-30T13:07:27+00:00"
+  },
+  {
+   "title": "血流成河！台指期夜盤失守4萬5大關了 - 自由財經",
+   "source": "自由財經",
+   "time": "2026-10-30T12:26:21+00:00"
+  },
+  {
+   "title": "〈台股盤前要聞〉台達電預期Q4營收優於Q3、國巨Q4可望淡季不淡 - 鉅亨網",
+   "source": "鉅亨網",
+   "time": "2026-10-29T21:09:10+00:00"
+  },
+  {
+   "title": "10／30盤前｜台股跌！外資錢進金融、電信 買超10強金控包辦6檔 - 工商時報",
+   "source": "工商時報",
+   "time": "2026-10-30T00:20:00+00:00"
+  },
+  {
+   "title": "美股存儲芯片股盤前集體下挫 閃迪跌近10% - TradingView",
+   "source": "TradingView",
+   "time": "2026-10-30T11:09:52+00:00"
+  },
+  {
+   "title": "英特爾盤前暴跌近25% 拖累半導體族群 輝達盤前挫2.8% - Yahoo股市",
+   "source": "Yahoo股市",
+   "time": "2026-10-30T11:19:22+00:00"
+  },
+  {
+   "title": "【1030台股盤後】外資狂倒約略1125億創史上第七大！重點觀察融資餘額與美國期中選舉，弱勢盤鎖定投本比【精測】、【富世達】、【佳世達】｜豐雲學堂2026 年 10 月 - 永豐金證券",
+   "source": "永豐金證券",
+   "time": "2026-10-30T09:53:48+00:00"
+  },
+  {
+   "title": "【Follow法人】外資賣超1124億元「史上第七大」！10月瘋砍台股近1兆元...投顧董座：破底觸發程式交易 - Yahoo股市",
+   "source": "Yahoo股市",
+   "time": "2026-10-30T07:50:07+00:00"
+  },
+  {
+   "title": "外資單日重砍台股1124億元創史上第七大賣超 反手布局防禦型傳產股 - 鉅亨網",
+   "source": "鉅亨網",
+   "time": "2026-10-30T09:44:53+00:00"
+  },
+  {
+   "title": "台股今日重跌2.49％、外資狂賣1124億 金管會回應了 - 自由財經",
+   "source": "自由財經",
+   "time": "2026-10-30T10:37:50+00:00"
+  }
+ ],
+ "candidates": {
+  "2603.TW": {
+   "name": "長榮",
+   "sector": "TWSE",
+   "scan": {
+    "close": 271.5,
+    "ret1d": 4.023,
+    "ret5d": 4.423,
+    "ret20d": 13.361,
+    "ret60d": 30.843,
+    "vol_ratio": 1.835,
+    "dollar_vol": 3517096831.525,
+    "cmf20": 0.393,
+    "near_high": 1.0,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": 0.0,
+    "rs20": 19.698,
+    "rs60": 27.951,
+    "score": 1.424,
+    "unusual": false
+   },
+   "technical": {
+    "close": 271.5,
+    "atr14": 7.59,
+    "atr_pct": 2.79,
+    "rsi14": 68.6,
+    "macd": 7.226,
+    "macd_signal": 6.682,
+    "macd_hist_rising": true,
+    "ma20": 253.75,
+    "ma50": 244.45,
+    "ma200": 205.18,
+    "bb_upper": 279.12,
+    "bb_lower": 228.38,
+    "support_20d": 231.0,
+    "resistance_20d": 271.5,
+    "high_52w": 271.5,
+    "low_52w": 165.08,
+    "pivot": 267.33,
+    "r1": 275.67,
+    "s1": 263.17,
+    "cmf20": 0.393,
+    "vol_ratio_20d": 1.84,
+    "ret_1d_pct": 4.02,
+    "ret_5d_pct": 4.42,
+    "ret_20d_pct": 13.36,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 267.7,
+     "entry_high": 271.5,
+     "stop_loss": 258.22,
+     "take_profit_1": 292.37,
+     "take_profit_2": 303.76,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Evergreen Marine Corporation (Taiwan) Ltd.",
+     "sector": "Industrials",
+     "industry": "Marine Shipping",
+     "marketCap": 587809161216,
+     "trailingPE": 10.773809,
+     "forwardPE": 8.907618,
+     "priceToBook": 1.0478944,
+     "enterpriseToEbitda": 6.82,
+     "returnOnEquity": 0.101660006,
+     "returnOnAssets": 0.03881,
+     "grossMargins": 0.20854999,
+     "operatingMargins": 0.18281001,
+     "profitMargins": 0.14588,
+     "revenueGrowth": 0.216,
+     "earningsGrowth": 0.462,
+     "freeCashflow": -6722402304,
+     "totalRevenue": 374286516224,
+     "debtToEquity": 34.708,
+     "currentRatio": 1.388,
+     "dividendYield": 6.13,
+     "beta": 0.543,
+     "targetMeanPrice": 271.6,
+     "targetHighPrice": 332.0,
+     "targetLowPrice": 190.0,
+     "recommendationKey": "buy",
+     "recommendationMean": 2.2,
+     "numberOfAnalystOpinions": 10,
+     "heldPercentInstitutions": 0.30533,
+     "heldPercentInsiders": 0.19878,
+     "fiftyTwoWeekHigh": 271.5,
+     "fiftyTwoWeekLow": 178.0
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      24.4,
+      38.0,
+      18.0,
+      63.5
+     ],
+     "gross_margin_std_pp": 20.14,
+     "revenue_cagr_pct": -15.5,
+     "roic_by_year_pct": [
+      13.4,
+      33.1,
+      14.3,
+      118.6
+     ],
+     "fcf_margin_pct": 20.9
+    },
+    "next_earnings": "2026-11-12"
+   },
+   "news": [
+    {
+     "title": "長榮（2603）這段漲勢，你現在是撿便宜還是被套牢？ - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T10:22:42+00:00"
+    },
+    {
+     "title": "【10:02 即時新聞】長榮(2603)股價走強，盤面聚焦貨櫃運價淡季不淡 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T02:02:35+00:00"
+    },
+    {
+     "title": "焦點股》長榮海運：運價高檔支撐 逆勢揚帆 - 自由財經",
+     "source": "自由財經",
+     "time": "2026-10-30T04:39:42+00:00"
+    },
+    {
+     "title": "三大法人買賣超– 外資買超(3008)大立光、(2603)長榮，投信買超(3711)日月光投控、(2330)台積電，法人合計賣超1398.44億元(1030)｜豐雲學堂2026 年 10 月 - 永豐金證券",
+     "source": "永豐金證券",
+     "time": "2026-10-30T08:38:41+00:00"
+    },
+    {
+     "title": "長榮領軍航運上漲 成台股救火隊 - UDN",
+     "source": "UDN",
+     "time": "2026-10-30T02:49:25+00:00"
+    },
+    {
+     "title": "長榮（2603）連續四天量縮整理，這代表什麼？ - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T09:03:10+00:00"
+    },
+    {
+     "title": "台股盤中跌逾千點！長榮衝271元 萬海、陽明跟漲掀航運熱潮 - 聚財網",
+     "source": "聚財網",
+     "time": "2026-10-30T05:21:17+00:00"
+    },
+    {
+     "title": "焦點股》長榮海運：運價高檔支撐 逆勢揚帆 - 自由時報",
+     "source": "自由時報",
+     "time": "2026-10-30T04:39:42+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 1077,
+     "foreign_net_lots_5d": 6647,
+     "trust_net_lots_last": 107,
+     "trust_net_lots_5d": -164,
+     "dealer_net_lots_5d": 1344,
+     "foreign_buy_days_of_5": 5
+    },
+    "margin": {
+     "margin_balance_lots": 8076.0,
+     "margin_change_lots": -137.0,
+     "short_balance_lots": 433.0,
+     "short_change_lots": -73.0,
+     "short_to_margin_ratio_pct": 5.36
+    },
+    "valuation_revenue": {
+     "pe": 10.35,
+     "pb": 1.01,
+     "dividend_yield_pct": 6.13,
+     "revenue_month": "11509",
+     "revenue_mom_pct": 1.4812731969497137,
+     "revenue_yoy_pct": 63.74746109181468,
+     "revenue_ytd_yoy_pct": 15.363767827979071
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 72.4,
+     "retail_under50lots_pct": 15.98,
+     "total_holders": 255613
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "3105.TWO": {
+   "name": "穩懋",
+   "sector": "TPEx",
+   "scan": {
+    "close": 578.0,
+    "ret1d": -2.694,
+    "ret5d": 18.93,
+    "ret20d": 6.642,
+    "ret60d": 85.852,
+    "vol_ratio": 1.687,
+    "dollar_vol": 12809755749.4,
+    "cmf20": 0.105,
+    "near_high": 0.911,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": -4.545,
+    "rs20": 12.979,
+    "rs60": 82.96,
+    "score": 1.413,
+    "unusual": false
+   },
+   "technical": {
+    "close": 578.0,
+    "atr14": 36.91,
+    "atr_pct": 6.39,
+    "rsi14": 61.0,
+    "macd": 13.454,
+    "macd_signal": 11.549,
+    "macd_hist_rising": true,
+    "ma20": 542.25,
+    "ma50": 485.71,
+    "ma200": 407.24,
+    "bb_upper": 635.04,
+    "bb_lower": 449.46,
+    "support_20d": 454.0,
+    "resistance_20d": 630.0,
+    "high_52w": 634.33,
+    "low_52w": 97.09,
+    "pivot": 569.33,
+    "r1": 597.67,
+    "s1": 549.67,
+    "cmf20": 0.105,
+    "vol_ratio_20d": 1.69,
+    "ret_1d_pct": -2.69,
+    "ret_5d_pct": 18.93,
+    "ret_20d_pct": 6.64,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 559.54,
+     "entry_high": 578.0,
+     "stop_loss": 513.41,
+     "take_profit_1": 679.5,
+     "take_profit_2": 734.87,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "WIN Semiconductors Corp.",
+     "sector": "Technology",
+     "industry": "Semiconductors",
+     "marketCap": 245037547520,
+     "trailingPE": 68.0,
+     "forwardPE": 44.81506,
+     "priceToBook": 5.5931334,
+     "enterpriseToEbitda": 47.774,
+     "returnOnEquity": 0.073470004,
+     "returnOnAssets": 0.02217,
+     "grossMargins": 0.28282,
+     "operatingMargins": 0.14112,
+     "profitMargins": 0.18868999,
+     "revenueGrowth": 0.391,
+     "freeCashflow": 515769248,
+     "totalRevenue": 19129661440,
+     "debtToEquity": 28.105,
+     "currentRatio": 1.619,
+     "dividendYield": 0.34,
+     "beta": 2.026,
+     "targetMeanPrice": 504.4,
+     "targetHighPrice": 800.0,
+     "targetLowPrice": 162.0,
+     "recommendationKey": "buy",
+     "recommendationMean": 2.33333,
+     "numberOfAnalystOpinions": 15,
+     "heldPercentInstitutions": 0.14930001,
+     "heldPercentInsiders": 0.18872999,
+     "fiftyTwoWeekHigh": 637.0,
+     "fiftyTwoWeekLow": 105.0
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      24.2,
+      23.2,
+      21.9,
+      25.8
+     ],
+     "gross_margin_std_pp": 1.64,
+     "revenue_cagr_pct": -3.2,
+     "roic_by_year_pct": [
+      3.3,
+      -0.0,
+      1.6,
+      3.4
+     ],
+     "rnd_intensity_pct": 9.6,
+     "fcf_margin_pct": 19.2
+    },
+    "next_earnings": null
+   },
+   "news": [
+    {
+     "title": "穩懋(3105) 個股概覽 | 個股 - 股市 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T12:09:31+00:00"
+    },
+    {
+     "title": "鉅亨速報 - Factset 最新調查：穩懋(3105-TW)目標價調升至474.5元，幅度約6.75% - 鉅亨網",
+     "source": "鉅亨網",
+     "time": "2026-10-29T00:10:41+00:00"
+    },
+    {
+     "title": "【09:00 即時新聞】穩懋(3105)亮燈漲停 法說後買盤急攻 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-29T01:01:12+00:00"
+    },
+    {
+     "title": "Marvell傳收購Lumentum搶攻AI，穩懋迎潛在商機- 新聞 - MoneyDJ",
+     "source": "MoneyDJ",
+     "time": "2026-10-30T02:25:00+00:00"
+    },
+    {
+     "title": "財報亮麗、展望佳法人調高穩懋獲利預估值及目標價| 經濟日報 - LINE TODAY",
+     "source": "LINE TODAY",
+     "time": "2026-10-30T06:03:19+00:00"
+    },
+    {
+     "title": "焦點股》穩懋：PicoJool攜手 搶進AI光通訊 - 自由財經",
+     "source": "自由財經",
+     "time": "2026-10-28T01:32:49+00:00"
+    },
+    {
+     "title": "三大法人買賣超 – 外資買超(3105)穩懋、(2408)南亞科，投信買超(5274)信驊、(2383)台光電，法人合計賣超816.66億元 - 永豐金證券",
+     "source": "永豐金證券",
+     "time": "2026-10-29T08:49:13+00:00"
+    },
+    {
+     "title": "穩懋 3105 2026Q3 法說會重點：毛利率37.4%！光通何時放量？ - StockFeel 股感",
+     "source": "StockFeel 股感",
+     "time": "2026-10-28T09:14:52+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": "N/A（上櫃或無資料）",
+    "margin": "N/A",
+    "valuation_revenue": {},
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 54.6,
+     "retail_under50lots_pct": 29.07,
+     "total_holders": 113398
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "2892.TW": {
+   "name": "第一金",
+   "sector": "TWSE",
+   "scan": {
+    "close": 44.6,
+    "ret1d": 0.337,
+    "ret5d": 5.313,
+    "ret20d": 15.395,
+    "ret60d": 28.854,
+    "vol_ratio": 1.514,
+    "dollar_vol": 844543440.946,
+    "cmf20": 0.347,
+    "near_high": 0.998,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": -0.337,
+    "rs20": 21.731,
+    "rs60": 25.962,
+    "score": 1.344,
+    "unusual": false
+   },
+   "technical": {
+    "close": 44.6,
+    "atr14": 0.97,
+    "atr_pct": 2.17,
+    "rsi14": 78.1,
+    "macd": 1.497,
+    "macd_signal": 1.219,
+    "macd_hist_rising": true,
+    "ma20": 40.91,
+    "ma50": 38.57,
+    "ma200": 31.6,
+    "bb_upper": 44.88,
+    "bb_lower": 36.94,
+    "support_20d": 37.95,
+    "resistance_20d": 44.7,
+    "high_52w": 44.7,
+    "low_52w": 26.19,
+    "pivot": 44.38,
+    "r1": 44.92,
+    "s1": 44.07,
+    "cmf20": 0.347,
+    "vol_ratio_20d": 1.51,
+    "ret_1d_pct": 0.34,
+    "ret_5d_pct": 5.31,
+    "ret_20d_pct": 15.39,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 44.12,
+     "entry_high": 44.6,
+     "stop_loss": 42.9,
+     "take_profit_1": 47.27,
+     "take_profit_2": 48.72,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "First Financial Holding Co., Ltd.",
+     "sector": "Financial Services",
+     "industry": "Banks - Regional",
+     "marketCap": 641324220416,
+     "trailingPE": 23.850267,
+     "forwardPE": 18.846954,
+     "priceToBook": 2.1270506,
+     "grossMargins": 0.0,
+     "operatingMargins": 0.50297,
+     "profitMargins": 0.41645,
+     "revenueGrowth": 0.016,
+     "earningsGrowth": 0.08,
+     "totalRevenue": 78914101248,
+     "dividendYield": 2.92,
+     "beta": 0.174,
+     "targetMeanPrice": 37.94,
+     "targetHighPrice": 42.0,
+     "targetLowPrice": 33.7,
+     "recommendationKey": "none",
+     "numberOfAnalystOpinions": 5,
+     "heldPercentInstitutions": 0.34269002,
+     "heldPercentInsiders": 0.13045,
+     "fiftyTwoWeekHigh": 44.7,
+     "fiftyTwoWeekLow": 27.2
+    },
+    "moat": {
+     "revenue_cagr_pct": 4.7,
+     "fcf_margin_pct": 79.4
+    },
+    "next_earnings": "2026-11-26"
+   },
+   "news": [
+    {
+     "title": "2892 第一金- 【最新消息】四投信整併由它主導，「官股金控」收盤寫新高！ - 股市爆料同學會 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T10:44:36+00:00"
+    },
+    {
+     "title": "【12:28 即時新聞】第一金(2892)盤中小漲，主力與法人買盤延續偏多 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T04:29:03+00:00"
+    },
+    {
+     "title": "熱門股》四合一題材助攻 第一金寫天價 - 自由財經",
+     "source": "自由財經",
+     "time": "2026-10-29T21:30:00+00:00"
+    },
+    {
+     "title": "資金避風港！第一金飆逾4%續寫新高 8檔金融股漲逾1% - Yahoo股市",
+     "source": "Yahoo股市",
+     "time": "2026-10-29T03:13:08+00:00"
+    },
+    {
+     "title": "台股29日失守5日線 金融類股第一金領漲終場上漲3.86% - 理財周刊",
+     "source": "理財周刊",
+     "time": "2026-10-29T07:20:11+00:00"
+    },
+    {
+     "title": "第一金控主導四投信整併，瞄準前八大資管版圖 - 台視全球資訊網",
+     "source": "台視全球資訊網",
+     "time": "2026-10-29T03:55:02+00:00"
+    },
+    {
+     "title": "第一金融控股 | 2892.TW 股價走勢與即時報價 - BigGo 財經",
+     "source": "BigGo 財經",
+     "time": "2026-10-27T19:06:00+00:00"
+    },
+    {
+     "title": "台股跌667點金融股卻撐住！第一金漲近4% 公股銀行、金控全面收紅 - 聚財網",
+     "source": "聚財網",
+     "time": "2026-10-29T09:29:21+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 3635,
+     "foreign_net_lots_5d": 18101,
+     "trust_net_lots_last": -536,
+     "trust_net_lots_5d": -1157,
+     "dealer_net_lots_5d": 2718,
+     "foreign_buy_days_of_5": 4
+    },
+    "margin": {
+     "margin_balance_lots": 1631.0,
+     "margin_change_lots": -592.0,
+     "short_balance_lots": 172.0,
+     "short_change_lots": 14.0,
+     "short_to_margin_ratio_pct": 10.55
+    },
+    "valuation_revenue": {
+     "pe": 20.77,
+     "pb": 2.12,
+     "dividend_yield_pct": 2.92,
+     "revenue_month": "11509",
+     "revenue_mom_pct": -19.404371850634394,
+     "revenue_yoy_pct": -1.2815335173411124,
+     "revenue_ytd_yoy_pct": 15.782235219596398
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 68.79,
+     "retail_under50lots_pct": 15.03,
+     "total_holders": 432173
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "1303.TW": {
+   "name": "南亞",
+   "sector": "TWSE",
+   "scan": {
+    "close": 296.0,
+    "ret1d": -5.128,
+    "ret5d": -1.661,
+    "ret20d": 15.851,
+    "ret60d": 79.394,
+    "vol_ratio": 0.809,
+    "dollar_vol": 28376789807.8,
+    "cmf20": 0.063,
+    "near_high": 0.845,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": -4.968,
+    "rs20": 22.188,
+    "rs60": 76.502,
+    "score": 1.254,
+    "unusual": false
+   },
+   "technical": {
+    "close": 296.0,
+    "atr14": 19.93,
+    "atr_pct": 6.73,
+    "rsi14": 52.8,
+    "macd": 15.078,
+    "macd_signal": 18.799,
+    "macd_hist_rising": false,
+    "ma20": 302.8,
+    "ma50": 255.58,
+    "ma200": 146.2,
+    "bb_upper": 344.12,
+    "bb_lower": 261.48,
+    "support_20d": 250.5,
+    "resistance_20d": 350.5,
+    "high_52w": 350.5,
+    "low_52w": 39.51,
+    "pivot": 293.83,
+    "r1": 300.67,
+    "s1": 289.17,
+    "cmf20": 0.063,
+    "vol_ratio_20d": 0.81,
+    "ret_1d_pct": -5.13,
+    "ret_5d_pct": -1.66,
+    "ret_20d_pct": 15.85,
+    "trend": "盤整/轉折",
+    "baseline_plan": {
+     "entry_low": 286.04,
+     "entry_high": 296.0,
+     "stop_loss": 261.12,
+     "take_profit_1": 350.81,
+     "take_profit_2": 380.7,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Nan Ya Plastics Corporation",
+     "sector": "Basic Materials",
+     "industry": "Specialty Chemicals",
+     "marketCap": 2347523375104,
+     "trailingPE": 48.05195,
+     "forwardPE": 13.3509245,
+     "priceToBook": 4.91376,
+     "enterpriseToEbitda": 63.875,
+     "returnOnEquity": 0.12316,
+     "returnOnAssets": 0.01675,
+     "grossMargins": 0.12567,
+     "operatingMargins": 0.13578,
+     "profitMargins": 0.17512,
+     "revenueGrowth": 0.273,
+     "freeCashflow": -14217868288,
+     "totalRevenue": 280887427072,
+     "debtToEquity": 29.963,
+     "currentRatio": 1.778,
+     "dividendYield": 0.26,
+     "beta": 0.818,
+     "targetMeanPrice": 323.875,
+     "targetHighPrice": 506.0,
+     "targetLowPrice": 26.0,
+     "recommendationKey": "buy",
+     "recommendationMean": 2.0,
+     "numberOfAnalystOpinions": 8,
+     "heldPercentInstitutions": 0.15231,
+     "heldPercentInsiders": 0.38118,
+     "fiftyTwoWeekHigh": 350.5,
+     "fiftyTwoWeekLow": 39.7
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      8.3,
+      7.2,
+      7.4,
+      15.2
+     ],
+     "gross_margin_std_pp": 3.81,
+     "revenue_cagr_pct": -9.9,
+     "roic_by_year_pct": [
+      1.7,
+      1.5,
+      2.2,
+      8.5
+     ],
+     "fcf_margin_pct": -1.0
+    },
+    "next_earnings": "2026-11-10"
+   },
+   "news": [
+    {
+     "title": "南亞(1303) 個股概覽 | 個股 - 股市 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T11:32:47+00:00"
+    },
+    {
+     "title": "南亞（1303）Q3自結財報：EPS 4.9元創新高、電子材料占比衝上58%｜股市話題｜豐雲學堂2026 年 10 月 - 永豐金證券",
+     "source": "永豐金證券",
+     "time": "2026-10-29T10:56:55+00:00"
+    },
+    {
+     "title": "最狂不是南亞！「這檔」90天暴漲559%、玉晶光60天飆197% 20檔注意股一次看 - Yahoo股市",
+     "source": "Yahoo股市",
+     "time": "2026-10-29T00:28:13+00:00"
+    },
+    {
+     "title": "【13:24 即時新聞】南亞(1303)勁揚逾7% 電子材料與塑化權值雙題材受關注 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-28T05:29:50+00:00"
+    },
+    {
+     "title": "焦點股》南亞：借券賣出飆破9.8萬張成助力? 股價大漲逾5％ - 自由財經",
+     "source": "自由財經",
+     "time": "2026-10-28T02:09:24+00:00"
+    },
+    {
+     "title": "本業、業外皆美 法人調高南亞獲利預估值及目標價 - UDN",
+     "source": "UDN",
+     "time": "2026-10-29T05:22:51+00:00"
+    },
+    {
+     "title": "1表看》台塑、華夏、台達化...塑化6寶誰貴誰便宜南亞錯殺「2字頭」快撿？法人目標價EPS全說了- 上市櫃 - 旺得富理財網",
+     "source": "旺得富理財網",
+     "time": "2026-10-28T01:11:25+00:00"
+    },
+    {
+     "title": "【零股排行榜】 盤中零股成交量TOP 20｜0050 元大台灣50、2344 華邦電、2408 南亞科、1303 南亞、00406A 主動中信台灣收益(1028)｜豐雲學堂2026 年 10 月 - 永豐金證券",
+     "source": "永豐金證券",
+     "time": "2026-10-28T21:41:47+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": -5521,
+     "foreign_net_lots_5d": -2936,
+     "trust_net_lots_last": 1256,
+     "trust_net_lots_5d": 3405,
+     "dealer_net_lots_5d": 3721,
+     "foreign_buy_days_of_5": 2
+    },
+    "margin": {
+     "margin_balance_lots": 46357.0,
+     "margin_change_lots": -447.0,
+     "short_balance_lots": 2517.0,
+     "short_change_lots": -137.0,
+     "short_to_margin_ratio_pct": 5.43
+    },
+    "valuation_revenue": {
+     "pe": 50.32,
+     "pb": 5.18,
+     "dividend_yield_pct": 0.26,
+     "revenue_month": "11509",
+     "revenue_mom_pct": 12.49006532791354,
+     "revenue_yoy_pct": 55.25857165202359,
+     "revenue_ytd_yoy_pct": 26.808140706895525
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 83.83,
+     "retail_under50lots_pct": 8.7,
+     "total_holders": 310692
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "2801.TW": {
+   "name": "彰銀",
+   "sector": "TWSE",
+   "scan": {
+    "close": 30.7,
+    "ret1d": 0.656,
+    "ret5d": 2.676,
+    "ret20d": 11.232,
+    "ret60d": 28.055,
+    "vol_ratio": 1.177,
+    "dollar_vol": 515181885.187,
+    "cmf20": 0.479,
+    "near_high": 1.0,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": -0.656,
+    "rs20": 17.568,
+    "rs60": 25.163,
+    "score": 1.222,
+    "unusual": false
+   },
+   "technical": {
+    "close": 30.7,
+    "atr14": 0.61,
+    "atr_pct": 1.99,
+    "rsi14": 73.2,
+    "macd": 0.86,
+    "macd_signal": 0.77,
+    "macd_hist_rising": true,
+    "ma20": 28.92,
+    "ma50": 27.43,
+    "ma200": 22.24,
+    "bb_upper": 31.13,
+    "bb_lower": 26.72,
+    "support_20d": 27.1,
+    "resistance_20d": 30.7,
+    "high_52w": 30.7,
+    "low_52w": 18.64,
+    "pivot": 30.45,
+    "r1": 30.95,
+    "s1": 30.2,
+    "cmf20": 0.479,
+    "vol_ratio_20d": 1.18,
+    "ret_1d_pct": 0.66,
+    "ret_5d_pct": 2.68,
+    "ret_20d_pct": 11.23,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 30.39,
+     "entry_high": 30.7,
+     "stop_loss": 29.63,
+     "take_profit_1": 32.38,
+     "take_profit_2": 33.29,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Chang Hwa Commercial Bank, Ltd.",
+     "sector": "Financial Services",
+     "industry": "Banks - Regional",
+     "marketCap": 370248089600,
+     "trailingPE": 20.197369,
+     "priceToBook": 1.6118871,
+     "returnOnEquity": 0.09246001,
+     "returnOnAssets": 0.00583,
+     "grossMargins": 0.0,
+     "operatingMargins": 0.54618,
+     "profitMargins": 0.43971002,
+     "revenueGrowth": 0.136,
+     "earningsGrowth": 0.22,
+     "totalRevenue": 45393547264,
+     "dividendYield": 2.62,
+     "beta": 0.226,
+     "recommendationKey": "none",
+     "heldPercentInstitutions": 0.25444,
+     "heldPercentInsiders": 0.28416002,
+     "fiftyTwoWeekHigh": 30.7,
+     "fiftyTwoWeekLow": 19.268291
+    },
+    "moat": {
+     "revenue_cagr_pct": 9.7,
+     "fcf_margin_pct": -76.6
+    },
+    "next_earnings": null
+   },
+   "news": [
+    {
+     "title": "彰銀(2801)站上30元創高，外資連買能否延續？-Momentum 動能沈沈 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T11:35:18+00:00"
+    },
+    {
+     "title": "2801 彰銀- 換股比例- 股市爆料同學會 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T05:51:46+00:00"
+    },
+    {
+     "title": "《金融股》彰銀主辦世平集團聯貸案簽約- 上市櫃 - 旺得富理財網",
+     "source": "旺得富理財網",
+     "time": "2026-10-30T02:45:16+00:00"
+    },
+    {
+     "title": "9銀行齊挺半導體通路龍頭 彰銀兆豐銀統籌世平集團逾363億元聯貸案簽約 - Yahoo新聞",
+     "source": "Yahoo新聞",
+     "time": "2026-10-30T02:44:27+00:00"
+    },
+    {
+     "title": "【13:08 即時新聞】彰銀(2801)盤中小漲，外資買盤續為金融族群焦點 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T05:08:58+00:00"
+    },
+    {
+     "title": "彰銀主辦世平聯貸案 - UDN",
+     "source": "UDN",
+     "time": "2026-10-29T16:52:54+00:00"
+    },
+    {
+     "title": "9銀行挺半導體通路龍頭 彰銀兆豐銀統籌大聯大旗下世平集團逾363億元聯貸案簽約 - 鉅亨網",
+     "source": "鉅亨網",
+     "time": "2026-10-29T11:16:02+00:00"
+    },
+    {
+     "title": "2801 彰銀 - 【彰銀(2801)盤後解析】外資萬張買超，籌碼集中 今天股... - 股市爆料同學會 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-29T12:41:57+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 10428,
+     "foreign_net_lots_5d": 40646,
+     "trust_net_lots_last": -493,
+     "trust_net_lots_5d": -3023,
+     "dealer_net_lots_5d": 174,
+     "foreign_buy_days_of_5": 5
+    },
+    "margin": {
+     "margin_balance_lots": 8476.0,
+     "margin_change_lots": 698.0,
+     "short_balance_lots": 747.0,
+     "short_change_lots": 76.0,
+     "short_to_margin_ratio_pct": 8.81
+    },
+    "valuation_revenue": {
+     "pe": 17.94,
+     "pb": 1.56,
+     "dividend_yield_pct": 3.44,
+     "revenue_month": "11509",
+     "revenue_mom_pct": -10.071927450718146,
+     "revenue_yoy_pct": 12.751828398169124,
+     "revenue_ytd_yoy_pct": 14.167696470576224
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 74.59,
+     "retail_under50lots_pct": 10.87,
+     "total_holders": 280181
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "2412.TW": {
+   "name": "中華電",
+   "sector": "TWSE",
+   "scan": {
+    "close": 160.0,
+    "ret1d": 1.266,
+    "ret5d": 1.266,
+    "ret20d": 11.498,
+    "ret60d": 15.108,
+    "vol_ratio": 1.584,
+    "dollar_vol": 1624916483.875,
+    "cmf20": 0.562,
+    "near_high": 1.0,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": 0.633,
+    "rs20": 17.835,
+    "rs60": 12.216,
+    "score": 1.201,
+    "unusual": false
+   },
+   "technical": {
+    "close": 160.0,
+    "atr14": 2.45,
+    "atr_pct": 1.53,
+    "rsi14": 82.7,
+    "macd": 4.171,
+    "macd_signal": 3.671,
+    "macd_hist_rising": true,
+    "ma20": 151.72,
+    "ma50": 144.59,
+    "ma200": 135.63,
+    "bb_upper": 162.37,
+    "bb_lower": 141.08,
+    "support_20d": 143.0,
+    "resistance_20d": 160.0,
+    "high_52w": 160.0,
+    "low_52w": 124.67,
+    "pivot": 159.33,
+    "r1": 160.67,
+    "s1": 158.67,
+    "cmf20": 0.562,
+    "vol_ratio_20d": 1.58,
+    "ret_1d_pct": 1.27,
+    "ret_5d_pct": 1.27,
+    "ret_20d_pct": 11.5,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 158.78,
+     "entry_high": 160.0,
+     "stop_loss": 155.71,
+     "take_profit_1": 166.74,
+     "take_profit_2": 170.41,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Chunghwa Telecom Co., Ltd.",
+     "sector": "Communication Services",
+     "industry": "Telecom Services",
+     "marketCap": 1241191415808,
+     "trailingPE": 31.434183,
+     "forwardPE": 29.650383,
+     "priceToBook": 3.3853836,
+     "enterpriseToEbitda": 13.967,
+     "returnOnEquity": 0.1092,
+     "returnOnAssets": 0.05687,
+     "grossMargins": 0.36490002,
+     "operatingMargins": 0.21607,
+     "profitMargins": 0.16126,
+     "revenueGrowth": 0.082,
+     "earningsGrowth": 0.046,
+     "freeCashflow": 49446817792,
+     "totalRevenue": 244927512576,
+     "debtToEquity": 9.998,
+     "currentRatio": 1.224,
+     "dividendYield": 3.29,
+     "beta": 0.104,
+     "targetMeanPrice": 136.5,
+     "targetHighPrice": 150.0,
+     "targetLowPrice": 118.0,
+     "recommendationKey": "none",
+     "numberOfAnalystOpinions": 6,
+     "heldPercentInstitutions": 0.23719,
+     "heldPercentInsiders": 0.41182998,
+     "fiftyTwoWeekHigh": 160.0,
+     "fiftyTwoWeekLow": 129.5
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      36.5,
+      35.9,
+      36.0,
+      36.6
+     ],
+     "gross_margin_std_pp": 0.36,
+     "revenue_cagr_pct": 2.9,
+     "roic_by_year_pct": [
+      10.6,
+      10.0,
+      9.8,
+      10.3
+     ],
+     "rnd_intensity_pct": 1.9,
+     "fcf_margin_pct": 21.1
+    },
+    "next_earnings": "2026-11-04"
+   },
+   "news": [
+    {
+     "title": "【10:41 即時新聞】中華電(2412)小漲續創高檔格局，AI與電信題材同受關注 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T02:42:39+00:00"
+    },
+    {
+     "title": "中華電(2412) 個股概覽 | 個股 - 股市 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-29T01:56:36+00:00"
+    },
+    {
+     "title": "2412 中華電- BBC Earth《藍色星球III》11月2日回歸，大衛艾登堡爵士百歲獻聲- 股市爆料同學會 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T09:03:30+00:00"
+    },
+    {
+     "title": "《通網股》中華電「組織大腦升級」！111位高層全拿國際認證創紀錄- 上市櫃 - 旺得富理財網",
+     "source": "旺得富理財網",
+     "time": "2026-10-28T09:21:40+00:00"
+    },
+    {
+     "title": "【13:24 即時新聞】中華電(2412)盤中續揚守高檔，AI與集團小金雞成焦點 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-29T05:27:12+00:00"
+    },
+    {
+     "title": "高雄市打造高雄 AI 燈塔 攜中華電導入主權 AI 應用與 IOWN 全光網 - 經濟日報",
+     "source": "經濟日報",
+     "time": "2026-10-29T09:38:02+00:00"
+    },
+    {
+     "title": "創紀錄！中華電信股東會舉行超過18個小時 隔日凌晨3點28分結束 - 自由時報",
+     "source": "自由時報",
+     "time": "2026-10-27T15:36:21+00:00"
+    },
+    {
+     "title": "中華電信公開「AI 時代 組織大腦升級計畫」 以敏捷決策迎戰新格局 - 聚財網",
+     "source": "聚財網",
+     "time": "2026-10-28T07:10:29+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 3738,
+     "foreign_net_lots_5d": 11450,
+     "trust_net_lots_last": 229,
+     "trust_net_lots_5d": 2969,
+     "dealer_net_lots_5d": -209,
+     "foreign_buy_days_of_5": 5
+    },
+    "margin": {
+     "margin_balance_lots": 565.0,
+     "margin_change_lots": 5.0,
+     "short_balance_lots": 40.0,
+     "short_change_lots": 0.0,
+     "short_to_margin_ratio_pct": 7.08
+    },
+    "valuation_revenue": {
+     "pe": 31.04,
+     "pb": 3.34,
+     "dividend_yield_pct": 3.29,
+     "revenue_month": "11509",
+     "revenue_mom_pct": 4.673262776681229,
+     "revenue_yoy_pct": 20.854836058858382,
+     "revenue_ytd_yoy_pct": 10.842187221915692
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 78.36,
+     "retail_under50lots_pct": 13.76,
+     "total_holders": 291498
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "2880.TW": {
+   "name": "華南金",
+   "sector": "TWSE",
+   "scan": {
+    "close": 50.4,
+    "ret1d": 0.599,
+    "ret5d": 0.199,
+    "ret20d": 11.136,
+    "ret60d": 22.098,
+    "vol_ratio": 1.649,
+    "dollar_vol": 639627720.146,
+    "cmf20": 0.266,
+    "near_high": 0.988,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": 0.2,
+    "rs20": 17.472,
+    "rs60": 19.205,
+    "score": 1.134,
+    "unusual": false
+   },
+   "technical": {
+    "close": 50.4,
+    "atr14": 1.27,
+    "atr_pct": 2.52,
+    "rsi14": 64.7,
+    "macd": 1.38,
+    "macd_signal": 1.368,
+    "macd_hist_rising": false,
+    "ma20": 48.22,
+    "ma50": 45.38,
+    "ma200": 36.89,
+    "bb_upper": 52.26,
+    "bb_lower": 44.18,
+    "support_20d": 44.0,
+    "resistance_20d": 51.0,
+    "high_52w": 51.0,
+    "low_52w": 27.18,
+    "pivot": 50.3,
+    "r1": 50.9,
+    "s1": 49.8,
+    "cmf20": 0.266,
+    "vol_ratio_20d": 1.65,
+    "ret_1d_pct": 0.6,
+    "ret_5d_pct": 0.2,
+    "ret_20d_pct": 11.14,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 49.77,
+     "entry_high": 50.4,
+     "stop_loss": 48.18,
+     "take_profit_1": 53.89,
+     "take_profit_2": 55.8,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Hua Nan Financial Holdings Co., Ltd.",
+     "sector": "Financial Services",
+     "industry": "Banks - Regional",
+     "marketCap": 708429217792,
+     "trailingPE": 26.808512,
+     "forwardPE": 20.360512,
+     "priceToBook": 2.9305735,
+     "returnOnEquity": 0.14359,
+     "returnOnAssets": 0.00751,
+     "grossMargins": 0.0,
+     "operatingMargins": 0.54532003,
+     "profitMargins": 0.42445,
+     "revenueGrowth": 0.32,
+     "earningsGrowth": 0.63,
+     "totalRevenue": 77273309184,
+     "dividendYield": 2.69,
+     "beta": 0.305,
+     "targetMeanPrice": 37.4,
+     "targetHighPrice": 42.0,
+     "targetLowPrice": 32.8,
+     "recommendationKey": "none",
+     "numberOfAnalystOpinions": 2,
+     "heldPercentInstitutions": 0.45407,
+     "heldPercentInsiders": 0.12763,
+     "fiftyTwoWeekHigh": 51.0,
+     "fiftyTwoWeekLow": 28.069305
+    },
+    "moat": {
+     "revenue_cagr_pct": 9.0,
+     "fcf_margin_pct": 3.1
+    },
+    "next_earnings": "2026-11-24"
+   },
+   "news": [
+    {
+     "title": "【11:02 即時新聞】華南金(2880)盤中小漲，市場聚焦法人與主力同步偏多 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T03:02:41+00:00"
+    },
+    {
+     "title": "傳公股打破華南金公民共治？阮清華：和諧共治多年 股價衝上公股第二 - UDN",
+     "source": "UDN",
+     "time": "2026-10-30T10:08:30+00:00"
+    },
+    {
+     "title": "【12:09 即時新聞】華南金(2880)盤中續揚站上50元關卡，主力與法人買盤成焦點 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-29T04:09:48+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 462,
+     "foreign_net_lots_5d": 6326,
+     "trust_net_lots_last": 678,
+     "trust_net_lots_5d": 3126,
+     "dealer_net_lots_5d": 8835,
+     "foreign_buy_days_of_5": 3
+    },
+    "margin": {
+     "margin_balance_lots": 572.0,
+     "margin_change_lots": 60.0,
+     "short_balance_lots": 80.0,
+     "short_change_lots": 4.0,
+     "short_to_margin_ratio_pct": 13.99
+    },
+    "valuation_revenue": {
+     "pe": 21.69,
+     "pb": 2.88,
+     "dividend_yield_pct": 2.89,
+     "revenue_month": "11509",
+     "revenue_mom_pct": -12.69931159817814,
+     "revenue_yoy_pct": 6.530816259343163,
+     "revenue_ytd_yoy_pct": 25.189836059004975
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 79.77,
+     "retail_under50lots_pct": 9.99,
+     "total_holders": 468586
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "2884.TW": {
+   "name": "玉山金",
+   "sector": "TWSE",
+   "scan": {
+    "close": 49.05,
+    "ret1d": 0.102,
+    "ret5d": -1.407,
+    "ret20d": 9.365,
+    "ret60d": 27.568,
+    "vol_ratio": 1.235,
+    "dollar_vol": 1270978978.395,
+    "cmf20": 0.3,
+    "near_high": 0.979,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": 0.0,
+    "rs20": 15.701,
+    "rs60": 24.676,
+    "score": 1.056,
+    "unusual": false
+   },
+   "technical": {
+    "close": 49.05,
+    "atr14": 1.08,
+    "atr_pct": 2.2,
+    "rsi14": 63.0,
+    "macd": 1.337,
+    "macd_signal": 1.429,
+    "macd_hist_rising": false,
+    "ma20": 47.58,
+    "ma50": 44.66,
+    "ma200": 35.66,
+    "bb_upper": 51.25,
+    "bb_lower": 43.92,
+    "support_20d": 44.2,
+    "resistance_20d": 50.1,
+    "high_52w": 50.1,
+    "low_52w": 28.21,
+    "pivot": 48.87,
+    "r1": 49.53,
+    "s1": 48.38,
+    "cmf20": 0.3,
+    "vol_ratio_20d": 1.24,
+    "ret_1d_pct": 0.1,
+    "ret_5d_pct": -1.41,
+    "ret_20d_pct": 9.36,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 48.51,
+     "entry_high": 49.05,
+     "stop_loss": 47.16,
+     "take_profit_1": 52.02,
+     "take_profit_2": 53.64,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "E.SUN Financial Holding Company, Ltd.",
+     "sector": "Financial Services",
+     "industry": "Banks - Regional",
+     "marketCap": 870735609856,
+     "trailingPE": 23.136793,
+     "forwardPE": 17.6709,
+     "priceToBook": 2.8186414,
+     "returnOnEquity": 0.14724,
+     "returnOnAssets": 0.008640001,
+     "grossMargins": 0.0,
+     "operatingMargins": 0.52341,
+     "profitMargins": 0.40925,
+     "revenueGrowth": 0.344,
+     "earningsGrowth": 0.429,
+     "totalRevenue": 95311798272,
+     "dividendYield": 2.86,
+     "beta": 0.298,
+     "targetMeanPrice": 40.08333,
+     "targetHighPrice": 45.1,
+     "targetLowPrice": 37.0,
+     "recommendationKey": "none",
+     "numberOfAnalystOpinions": 6,
+     "heldPercentInstitutions": 0.31344998,
+     "heldPercentInsiders": 0.05071,
+     "fiftyTwoWeekHigh": 50.1,
+     "fiftyTwoWeekLow": 29.4
+    },
+    "moat": {
+     "revenue_cagr_pct": 18.7,
+     "fcf_margin_pct": 37.2
+    },
+    "next_earnings": "2026-11-06"
+   },
+   "news": [
+    {
+     "title": "玉山金(2884) 個股概覽 | 個股 - 股市 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T12:54:29+00:00"
+    },
+    {
+     "title": "【13:05 即時新聞】玉山金(2884)盤中小幅走強，市場聚焦金控多頭結構 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T05:05:36+00:00"
+    },
+    {
+     "title": "【12:16 即時新聞】玉山金(2884)小漲續守高檔，估值聚焦中長期成長 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-29T04:16:34+00:00"
+    },
+    {
+     "title": "兩樁整併將撼動金控資產排名！玉山金進前五 「新國票」脫末座了？ - 經濟日報",
+     "source": "經濟日報",
+     "time": "2026-10-29T09:00:00+00:00"
+    },
+    {
+     "title": "《外資》賣超股：玉山金、旺宏、台玻 - 富聯網",
+     "source": "富聯網",
+     "time": "2026-10-28T23:54:00+00:00"
+    },
+    {
+     "title": "《台北股市》三大法人28日賣超前十大 電子雙「宏」共患難 玉山金獨泣 - 富聯網",
+     "source": "富聯網",
+     "time": "2026-10-28T08:27:00+00:00"
+    },
+    {
+     "title": "三商壽嫁玉山金 9月1日終止上市 股票最後交易日訂8月19日 - 經濟日報",
+     "source": "經濟日報",
+     "time": "2026-10-28T09:00:00+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 5101,
+     "foreign_net_lots_5d": 7997,
+     "trust_net_lots_last": -372,
+     "trust_net_lots_5d": 639,
+     "dealer_net_lots_5d": 7621,
+     "foreign_buy_days_of_5": 3
+    },
+    "margin": {
+     "margin_balance_lots": 5158.0,
+     "margin_change_lots": -22.0,
+     "short_balance_lots": 249.0,
+     "short_change_lots": -3.0,
+     "short_to_margin_ratio_pct": 4.83
+    },
+    "valuation_revenue": {
+     "pe": 20.33,
+     "pb": 2.82,
+     "dividend_yield_pct": 2.86,
+     "revenue_month": "11509",
+     "revenue_mom_pct": -12.683665231910275,
+     "revenue_yoy_pct": 7.184395645662037,
+     "revenue_ytd_yoy_pct": 19.59691999204426
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 70.72,
+     "retail_under50lots_pct": 14.83,
+     "total_holders": 617425
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "5880.TW": {
+   "name": "合庫金",
+   "sector": "TWSE",
+   "scan": {
+    "close": 29.0,
+    "ret1d": 0.346,
+    "ret5d": 2.837,
+    "ret20d": 11.111,
+    "ret60d": 14.086,
+    "vol_ratio": 1.134,
+    "dollar_vol": 485456894.342,
+    "cmf20": 0.459,
+    "near_high": 0.997,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": 0.0,
+    "rs20": 17.448,
+    "rs60": 11.194,
+    "score": 1.053,
+    "unusual": false
+   },
+   "technical": {
+    "close": 29.0,
+    "atr14": 0.53,
+    "atr_pct": 1.83,
+    "rsi14": 69.6,
+    "macd": 0.642,
+    "macd_signal": 0.51,
+    "macd_hist_rising": false,
+    "ma20": 27.44,
+    "ma50": 26.7,
+    "ma200": 23.71,
+    "bb_upper": 29.52,
+    "bb_lower": 25.37,
+    "support_20d": 25.65,
+    "resistance_20d": 29.1,
+    "high_52w": 29.1,
+    "low_52w": 21.31,
+    "pivot": 28.82,
+    "r1": 29.18,
+    "s1": 28.63,
+    "cmf20": 0.459,
+    "vol_ratio_20d": 1.13,
+    "ret_1d_pct": 0.35,
+    "ret_5d_pct": 2.84,
+    "ret_20d_pct": 11.11,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 28.73,
+     "entry_high": 29.0,
+     "stop_loss": 28.07,
+     "take_profit_1": 30.46,
+     "take_profit_2": 31.25,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Taiwan Cooperative Financial Holding Co., Ltd.",
+     "sector": "Financial Services",
+     "industry": "Banks - Regional",
+     "marketCap": 466115821568,
+     "trailingPE": 21.80451,
+     "forwardPE": 15.591397,
+     "priceToBook": 1.6060255,
+     "returnOnEquity": 0.09007,
+     "returnOnAssets": 0.00467,
+     "grossMargins": 0.0,
+     "operatingMargins": 0.53443,
+     "profitMargins": 0.32630002,
+     "revenueGrowth": 0.271,
+     "earningsGrowth": 0.419,
+     "totalRevenue": 74860199936,
+     "dividendYield": 2.77,
+     "beta": 0.169,
+     "recommendationKey": "none",
+     "heldPercentInstitutions": 0.1408,
+     "heldPercentInsiders": 0.33526,
+     "fiftyTwoWeekHigh": 29.1,
+     "fiftyTwoWeekLow": 22.0
+    },
+    "moat": {
+     "revenue_cagr_pct": 11.7,
+     "fcf_margin_pct": 5.5
+    },
+    "next_earnings": "2026-11-20"
+   },
+   "news": [
+    {
+     "title": "合庫金(5880)站上高檔區，獲利撐得起20倍本益比嗎？-Momentum 動能沈沈 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-30T10:15:17+00:00"
+    },
+    {
+     "title": "合作金庫金融控股 | 5880.TW 股價走勢與即時報價 - BigGo 財經",
+     "source": "BigGo 財經",
+     "time": "2026-10-27T20:20:37+00:00"
+    },
+    {
+     "title": "【11:28 即時新聞】合庫金(5880)盤中小漲，公股金控續列盤面焦點 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-29T03:29:10+00:00"
+    },
+    {
+     "title": "《外資》買超股：力積電、中鋼、合庫金 - 富聯網",
+     "source": "富聯網",
+     "time": "2026-10-27T23:52:00+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 5352,
+     "foreign_net_lots_5d": 26708,
+     "trust_net_lots_last": 890,
+     "trust_net_lots_5d": 4413,
+     "dealer_net_lots_5d": 2401,
+     "foreign_buy_days_of_5": 4
+    },
+    "margin": {
+     "margin_balance_lots": 1905.0,
+     "margin_change_lots": 153.0,
+     "short_balance_lots": 231.0,
+     "short_change_lots": 25.0,
+     "short_to_margin_ratio_pct": 12.13
+    },
+    "valuation_revenue": {
+     "pe": 18.89,
+     "pb": 1.56,
+     "dividend_yield_pct": 3.63,
+     "revenue_month": "11509",
+     "revenue_mom_pct": -13.223335967714654,
+     "revenue_yoy_pct": -3.741738176382978,
+     "revenue_ytd_yoy_pct": 15.614799655932377
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 71.95,
+     "retail_under50lots_pct": 12.17,
+     "total_holders": 404312
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "3035.TW": {
+   "name": "智原",
+   "sector": "TWSE",
+   "scan": {
+    "close": 213.5,
+    "ret1d": -7.775,
+    "ret5d": 11.198,
+    "ret20d": 1.425,
+    "ret60d": 33.438,
+    "vol_ratio": 5.133,
+    "dollar_vol": 1441395705.175,
+    "cmf20": 0.05,
+    "near_high": 0.871,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": -5.616,
+    "rs20": 7.762,
+    "rs60": 30.545,
+    "score": 0.899,
+    "unusual": true
+   },
+   "technical": {
+    "close": 213.5,
+    "atr14": 11.59,
+    "atr_pct": 5.43,
+    "rsi14": 57.0,
+    "macd": 4.605,
+    "macd_signal": 3.212,
+    "macd_hist_rising": true,
+    "ma20": 203.93,
+    "ma50": 190.69,
+    "ma200": 180.67,
+    "bb_upper": 226.03,
+    "bb_lower": 181.82,
+    "support_20d": 186.0,
+    "resistance_20d": 231.5,
+    "high_52w": 245.0,
+    "low_52w": 137.76,
+    "pivot": 214.33,
+    "r1": 220.17,
+    "s1": 207.67,
+    "cmf20": 0.05,
+    "vol_ratio_20d": 5.13,
+    "ret_1d_pct": -7.78,
+    "ret_5d_pct": 11.2,
+    "ret_20d_pct": 1.43,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 207.71,
+     "entry_high": 213.5,
+     "stop_loss": 193.22,
+     "take_profit_1": 245.37,
+     "take_profit_2": 262.76,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Faraday Technology Corporation",
+     "sector": "Technology",
+     "industry": "Semiconductors",
+     "marketCap": 55627493376,
+     "trailingPE": 84.38735,
+     "forwardPE": 35.029633,
+     "priceToBook": 3.0889652,
+     "enterpriseToEbitda": 64.723,
+     "returnOnEquity": 0.0631,
+     "returnOnAssets": 0.01828,
+     "grossMargins": 0.44157,
+     "operatingMargins": 0.05849,
+     "profitMargins": 0.06374,
+     "revenueGrowth": 0.132,
+     "earningsGrowth": 0.845,
+     "freeCashflow": 834559360,
+     "totalRevenue": 12373998592,
+     "debtToEquity": 1.868,
+     "currentRatio": 2.128,
+     "dividendYield": 0.78,
+     "beta": 1.37,
+     "targetMeanPrice": 194.27779,
+     "targetHighPrice": 220.0,
+     "targetLowPrice": 120.0,
+     "recommendationKey": "buy",
+     "recommendationMean": 2.5,
+     "numberOfAnalystOpinions": 9,
+     "heldPercentInstitutions": 0.08249,
+     "heldPercentInsiders": 0.17965001,
+     "fiftyTwoWeekHigh": 245.0,
+     "fiftyTwoWeekLow": 139.0
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      27.0,
+      45.7,
+      44.4,
+      48.8
+     ],
+     "gross_margin_std_pp": 9.81,
+     "revenue_cagr_pct": 11.3,
+     "roic_by_year_pct": [
+      57.4,
+      38.8,
+      20.4,
+      12.8
+     ],
+     "rnd_intensity_pct": 17.8,
+     "fcf_margin_pct": 1.5
+    },
+    "next_earnings": "2026-10-27（已公布）"
+   },
+   "news": [
+    {
+     "title": "智原（3035）做什麼？法說會：奪美系客戶2奈米大單，逆勢漲停原因、訂單動能一次掌握｜豐雲學堂2026 年 10 月 - 永豐金證券",
+     "source": "永豐金證券",
+     "time": "2026-10-29T09:43:31+00:00"
+    },
+    {
+     "title": "TWA00 加權指數- 智原（3035）近期法說會公布第三季財報與2奈米大單消息後，... - 股市爆料同學會 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T02:25:19+00:00"
+    },
+    {
+     "title": "2奈米晶片大單到手！智原先進製程接單告捷總經理透露美系客戶決策秘辛- 日報 - 工商時報",
+     "source": "工商時報",
+     "time": "2026-10-27T19:00:00+00:00"
+    },
+    {
+     "title": "智原 押價內外15% - 經濟日報",
+     "source": "經濟日報",
+     "time": "2026-10-29T16:01:17+00:00"
+    },
+    {
+     "title": "熱門股》法說會報喜 智原跳空漲停 - 自由財經",
+     "source": "自由財經",
+     "time": "2026-10-28T21:30:00+00:00"
+    },
+    {
+     "title": "智原 3035 2026Q3 法說會重點：營收年增13%！2奈米案何時貢獻？ - StockFeel 股感",
+     "source": "StockFeel 股感",
+     "time": "2026-10-28T03:02:09+00:00"
+    },
+    {
+     "title": "【09:07 即時新聞】智原(3035)亮燈漲停，2奈米雲端AI大單延續買氣 - CMoney投資網誌",
+     "source": "CMoney投資網誌",
+     "time": "2026-10-29T01:07:57+00:00"
+    },
+    {
+     "title": "智原（3035）拿下史上最大2奈米AI專案、開盤漲停！三星、聯電供應鏈同步受惠 - 優分析UAnalyze",
+     "source": "優分析UAnalyze",
+     "time": "2026-10-28T01:00:00+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": 8521,
+     "foreign_net_lots_5d": 7451,
+     "trust_net_lots_last": 0,
+     "trust_net_lots_5d": 331,
+     "dealer_net_lots_5d": 642,
+     "foreign_buy_days_of_5": 2
+    },
+    "margin": {
+     "margin_balance_lots": 9055.0,
+     "margin_change_lots": -171.0,
+     "short_balance_lots": 505.0,
+     "short_change_lots": 338.0,
+     "short_to_margin_ratio_pct": 5.58
+    },
+    "valuation_revenue": {
+     "pe": 76.4,
+     "pb": 3.35,
+     "dividend_yield_pct": 0.78,
+     "revenue_month": "11509",
+     "revenue_mom_pct": 19.818761948287936,
+     "revenue_yoy_pct": 4.41335394581861,
+     "revenue_ytd_yoy_pct": -37.002247210545534
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 29.73,
+     "retail_under50lots_pct": 53.78,
+     "total_holders": 110154
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "2379.TW": {
+   "name": "瑞昱",
+   "sector": "TWSE",
+   "scan": {
+    "close": 803.0,
+    "ret1d": 1.134,
+    "ret5d": 4.016,
+    "ret20d": 5.658,
+    "ret60d": 18.113,
+    "vol_ratio": 2.706,
+    "dollar_vol": 1942432535.35,
+    "cmf20": 0.325,
+    "near_high": 0.857,
+    "above_ma50": 1.0,
+    "above_ma200": 1.0,
+    "gap_pct": -4.912,
+    "rs20": 11.994,
+    "rs60": 15.221,
+    "score": 1.021,
+    "unusual": true
+   },
+   "technical": {
+    "close": 803.0,
+    "atr14": 26.51,
+    "atr_pct": 3.3,
+    "rsi14": 65.3,
+    "macd": 16.209,
+    "macd_signal": 14.711,
+    "macd_hist_rising": true,
+    "ma20": 770.5,
+    "ma50": 735.8,
+    "ma200": 614.25,
+    "bb_upper": 806.5,
+    "bb_lower": 734.5,
+    "support_20d": 728.0,
+    "resistance_20d": 808.0,
+    "high_52w": 936.74,
+    "low_52w": 422.98,
+    "pivot": 785.67,
+    "r1": 825.33,
+    "s1": 763.33,
+    "cmf20": 0.325,
+    "vol_ratio_20d": 2.71,
+    "ret_1d_pct": 1.13,
+    "ret_5d_pct": 4.02,
+    "ret_20d_pct": 5.66,
+    "trend": "多頭排列",
+    "baseline_plan": {
+     "entry_low": 789.75,
+     "entry_high": 803.0,
+     "stop_loss": 756.61,
+     "take_profit_1": 875.9,
+     "take_profit_2": 915.67,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Realtek Semiconductor Corp.",
+     "sector": "Technology",
+     "industry": "Semiconductors",
+     "marketCap": 411829010432,
+     "trailingPE": 29.576427,
+     "forwardPE": 20.496035,
+     "priceToBook": 8.208116,
+     "enterpriseToEbitda": 22.3,
+     "returnOnEquity": 0.30337,
+     "returnOnAssets": 0.062030002,
+     "grossMargins": 0.48576,
+     "operatingMargins": 0.0992,
+     "profitMargins": 0.10958,
+     "revenueGrowth": 0.177,
+     "earningsGrowth": -0.028,
+     "freeCashflow": 10104748032,
+     "totalRevenue": 129745379328,
+     "debtToEquity": 9.549,
+     "currentRatio": 1.189,
+     "dividendYield": 3.15,
+     "beta": 0.772,
+     "targetMeanPrice": 762.1875,
+     "targetHighPrice": 950.0,
+     "targetLowPrice": 540.0,
+     "recommendationKey": "buy",
+     "recommendationMean": 2.23529,
+     "numberOfAnalystOpinions": 16,
+     "heldPercentInstitutions": 0.57957,
+     "heldPercentInsiders": 0.055710003,
+     "fiftyTwoWeekHigh": 970.0,
+     "fiftyTwoWeekLow": 438.0
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      50.0,
+      50.4,
+      42.8,
+      48.9
+     ],
+     "gross_margin_std_pp": 3.54,
+     "revenue_cagr_pct": 3.2,
+     "roic_by_year_pct": [
+      29.4,
+      20.9,
+      32.2,
+      29.4
+     ],
+     "rnd_intensity_pct": 28.6,
+     "fcf_margin_pct": 15.0
+    },
+    "next_earnings": "2026-10-28（已公布）"
+   },
+   "news": [
+    {
+     "title": "瑞昱 2379 2026Q3 法說會重點：Q3營收年增28%！Q4淡季還會下滑嗎？ - StockFeel 股感",
+     "source": "StockFeel 股感",
+     "time": "2026-10-30T13:32:04+00:00"
+    },
+    {
+     "title": "【10:35 即時新聞】瑞昱(2379)股價維持高檔震盪，法說會展望成盤中焦點 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T02:36:04+00:00"
+    },
+    {
+     "title": "瑞昱(2379)第三季毛利率回升至47.4%！網通撐起成長，PC衰退與記憶體成本成隱憂 - 鉅亨網",
+     "source": "鉅亨網",
+     "time": "2026-10-30T02:30:03+00:00"
+    },
+    {
+     "title": "半導體產業鏈／瑞昱Q3每股賺8.05元！Wi-Fi 8 2027下半年量產 - 科技島",
+     "source": "科技島",
+     "time": "2026-10-30T07:48:00+00:00"
+    },
+    {
+     "title": "個股：瑞昱(2379)第三季每股賺8.05元，Q4營運未見傳統淡季效應 - 富聯網",
+     "source": "富聯網",
+     "time": "2026-10-30T02:35:00+00:00"
+    },
+    {
+     "title": "《半導體》瑞昱不只Wi-Fi！AI伺服器、人形機器人全要 外資喊價900元 - 旺得富理財網",
+     "source": "旺得富理財網",
+     "time": "2026-10-30T02:25:54+00:00"
+    },
+    {
+     "title": "瑞昱2030年HPC及Edge AI營收占比衝3成 - MoneyDJ",
+     "source": "MoneyDJ",
+     "time": "2026-10-30T01:20:00+00:00"
+    },
+    {
+     "title": "2379 瑞昱- 【最新消息】Switch2法人買超，「3檔概念股」表現有落差？ - 股市爆料同學會 - CMoney",
+     "source": "CMoney",
+     "time": "2026-10-30T11:47:42+00:00"
+    }
+   ],
+   "chips": {
+    "institutional": {
+     "foreign_net_lots_last": -78,
+     "foreign_net_lots_5d": 2517,
+     "trust_net_lots_last": 122,
+     "trust_net_lots_5d": -386,
+     "dealer_net_lots_5d": 399,
+     "foreign_buy_days_of_5": 4
+    },
+    "margin": {
+     "margin_balance_lots": 2387.0,
+     "margin_change_lots": -4.0,
+     "short_balance_lots": 100.0,
+     "short_change_lots": 14.0,
+     "short_to_margin_ratio_pct": 4.19
+    },
+    "valuation_revenue": {
+     "pe": 28.79,
+     "pb": 8.12,
+     "dividend_yield_pct": 3.15,
+     "revenue_month": "11509",
+     "revenue_mom_pct": -0.6549733436507982,
+     "revenue_yoy_pct": 23.353298366288925,
+     "revenue_ytd_yoy_pct": 15.845706809869483
+    },
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 60.16,
+     "retail_under50lots_pct": 9.66,
+     "total_holders": 81636
+    },
+    "data_as_of": "2026-10-29"
+   }
+  },
+  "5347.TWO": {
+   "name": "世界",
+   "sector": "TPEx",
+   "scan": {
+    "close": 144.0,
+    "ret1d": -7.987,
+    "ret5d": -10.559,
+    "ret20d": -20.442,
+    "ret60d": -4.636,
+    "vol_ratio": 2.55,
+    "dollar_vol": 2518934422.875,
+    "cmf20": -0.164,
+    "near_high": 0.661,
+    "above_ma50": 0.0,
+    "above_ma200": 0.0,
+    "gap_pct": -7.029,
+    "rs20": -14.106,
+    "rs60": -7.528,
+    "score": -0.507,
+    "unusual": true
+   },
+   "technical": {
+    "close": 144.0,
+    "atr14": 8.59,
+    "atr_pct": 5.96,
+    "rsi14": 34.0,
+    "macd": -3.727,
+    "macd_signal": -0.748,
+    "macd_hist_rising": false,
+    "ma20": 171.28,
+    "ma50": 163.72,
+    "ma200": 149.4,
+    "bb_upper": 197.59,
+    "bb_lower": 144.96,
+    "support_20d": 141.0,
+    "resistance_20d": 195.0,
+    "high_52w": 217.84,
+    "low_52w": 85.57,
+    "pivot": 145.17,
+    "r1": 149.33,
+    "s1": 139.83,
+    "cmf20": -0.164,
+    "vol_ratio_20d": 2.55,
+    "ret_1d_pct": -7.99,
+    "ret_5d_pct": -10.56,
+    "ret_20d_pct": -20.44,
+    "trend": "盤整/轉折",
+    "baseline_plan": {
+     "entry_low": 139.71,
+     "entry_high": 144.0,
+     "stop_loss": 128.97,
+     "take_profit_1": 167.62,
+     "take_profit_2": 180.51,
+     "risk_reward": 2.0
+    }
+   },
+   "fundamental": {
+    "info": {
+     "longName": "Vanguard International Semiconductor Corporation",
+     "sector": "Technology",
+     "industry": "Semiconductors",
+     "marketCap": 284880896000,
+     "trailingPE": 31.509846,
+     "forwardPE": 19.127975,
+     "priceToBook": 4.295046,
+     "enterpriseToEbitda": 18.848,
+     "returnOnEquity": 0.10717,
+     "returnOnAssets": 0.02866,
+     "grossMargins": 0.29104,
+     "operatingMargins": 0.20365,
+     "profitMargins": 0.16767,
+     "revenueGrowth": 0.218,
+     "earningsGrowth": 0.42,
+     "freeCashflow": -72866734080,
+     "totalRevenue": 51719065600,
+     "debtToEquity": 43.182,
+     "currentRatio": 1.346,
+     "dividendYield": 2.86,
+     "beta": 1.561,
+     "targetMeanPrice": 189.55556,
+     "targetHighPrice": 250.0,
+     "targetLowPrice": 89.0,
+     "recommendationKey": "buy",
+     "recommendationMean": 1.72222,
+     "numberOfAnalystOpinions": 18,
+     "heldPercentInstitutions": 0.50665003,
+     "heldPercentInsiders": 0.20309,
+     "fiftyTwoWeekHigh": 223.0,
+     "fiftyTwoWeekLow": 87.6
+    },
+    "moat": {
+     "gross_margin_by_year": [
+      28.1,
+      27.1,
+      27.3,
+      46.3
+     ],
+     "gross_margin_std_pp": 9.4,
+     "revenue_cagr_pct": -2.0,
+     "roic_by_year_pct": [
+      51.2,
+      19.8,
+      24.7,
+      14.2
+     ],
+     "rnd_intensity_pct": 4.5,
+     "fcf_margin_pct": -79.3
+    },
+    "next_earnings": "2026-11-06"
+   },
+   "news": [],
+   "chips": {
+    "institutional": "N/A（上櫃或無資料）",
+    "margin": "N/A",
+    "valuation_revenue": {},
+    "shareholder_distribution": {
+     "data_date": "20261022",
+     "whale_1000lots_pct": 81.14,
+     "retail_under50lots_pct": 10.72,
+     "total_holders": 114777
+    },
+    "data_as_of": "2026-10-29"
+   }
+  }
+ },
+ "tsm_adr_premium_pct": 13.58
+}

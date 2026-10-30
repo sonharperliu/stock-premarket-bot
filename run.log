@@ -1,0 +1,7 @@
+2026-10-30 14:28:55,985 INFO src.scanner: 價格資料：137 / 139 檔
+2026-10-30 14:28:56,130 INFO main: 第一層完成：掃描 116 檔，候選 12 檔
+2026-10-30 14:29:30,022 INFO main: 第二層完成：12 檔六維度資料
+2026-10-30 14:29:36,376 INFO httpx2: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-10-30 14:31:06,914 INFO src.analyzer: Claude[claude-sonnet-5-5] 用量：input=31766 output=12246 stop=tool_use
+2026-10-30 14:31:06,915 INFO main: 分析完成，耗時 140 秒
+2026-10-30 14:31:09,137 INFO main: 推播完成
