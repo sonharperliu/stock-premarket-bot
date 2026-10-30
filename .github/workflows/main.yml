@@ -87,7 +87,11 @@ jobs:
         run: |
           mkdir -p "$STATE_DIR"
           if git fetch -q --depth 1 origin bot-state 2>/dev/null; then
-            git archive FETCH_HEAD | tar -x -C "$STATE_DIR"
+            # 注意：git archive 在子資料夾執行只會打包該子資料夾，必須在 repo 根目錄執行
+            git -C "$GITHUB_WORKSPACE" archive FETCH_HEAD | tar -x -C "$STATE_DIR"
+            if ! ls "$STATE_DIR"/last_sent_*.txt >/dev/null 2>&1; then
+              echo "::error::bot-state 分支存在但讀不到推播紀錄，為避免重複推播而中止"; exit 1
+            fi
           fi
           ls -la "$STATE_DIR"; cat "$STATE_DIR"/last_sent_*.txt 2>/dev/null || echo "（尚無推播紀錄）"
 
@@ -138,7 +142,7 @@ jobs:
           mkdir -p /tmp/out && cp -r reports /tmp/out/ 2>/dev/null || true
           cp run.log /tmp/out/ 2>/dev/null || echo "no run.log（時間窗、休市或今日已推播檢查已略過）" > /tmp/out/run.log
           cp gate.log /tmp/out/ 2>/dev/null || true
-          cp -r "$STATE_DIR" /tmp/out/state 2>/dev/null || true
+          mkdir -p /tmp/out/state && cp "$STATE_DIR"/*.txt /tmp/out/state/ 2>/dev/null || true
           cd /tmp/out && git init -q && git checkout -q -b test-results
           echo "run=${{ github.run_id }} market=$MARKET force=$FORCE sha=${{ github.sha }}" > meta.txt
           git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "test run ${{ github.run_id }}"
