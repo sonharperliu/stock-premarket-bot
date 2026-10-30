@@ -12,11 +12,12 @@ import json
 import logging
 import sys
 import time
+from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from src import analyzer, chips_tw, chips_us, fundamentals, macro, news, scanner, telegram, technicals, universe
-from src.config import ANTHROPIC_API_KEY, DEEP_CANDIDATES, FINAL_PICKS, MARKETS, MIN_DOLLAR_VOLUME
+from src.config import ANTHROPIC_API_KEY, DEEP_CANDIDATES, FINAL_PICKS, MARKETS, MIN_DOLLAR_VOLUME, PREP_MINUTES
 from src.scheduler import check_window, is_trading_day, now_in, previous_trading_day, push_time
 
 import warnings
@@ -26,6 +27,11 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("main")
 ROOT = Path(__file__).resolve().parent
+
+
+def _sleep(seconds: float) -> None:
+    """排程等待專用（測試時可單獨替換，不影響其他套件的 time.sleep）。"""
+    time.sleep(seconds)
 
 
 def safe(fn, default):
@@ -150,18 +156,25 @@ def main():
 def run(a):
     market = a.market
 
+    status = "run"
     if not a.force:
-        ok, mins, why = check_window(market)
+        status, mins, why = check_window(market)
         log.info("時間窗檢查：%s", why)
-        if not ok:
+        if status == "skip":
             return
-    local_now = now_in(market)
-    today = local_now.date()
+    today = now_in(market).date()
     if not a.force:
         trading, why = is_trading_day(market, today)
         if not trading:
             log.info("今天 %s 不推播：%s（不呼叫 Claude，節省費用）", today, why)
             return
+        # 提早抵達的觸發：休眠到推播前 PREP_MINUTES 才抓資料，確保盤前數據最新
+        wait = (push_time(market) - now_in(market)).total_seconds() - PREP_MINUTES * 60
+        if status == "run" and wait > 0:
+            log.info("休眠 %.0f 分鐘，於 %s 開始分析", wait / 60,
+                     (push_time(market) - timedelta(minutes=PREP_MINUTES)).strftime("%H:%M %Z"))
+            _sleep(wait)
+    local_now = now_in(market)
 
     t0 = time.time()
     cands, prices, meta, sectors, etf_board, breadth = layer1(market)
@@ -209,13 +222,19 @@ def run(a):
     msgs = telegram.render_messages(result, market, stamp, macro_line(mac["markets"]))
     log.info("分析完成，耗時 %.0f 秒", time.time() - t0)
 
-    if not a.force:  # 等到開盤前 10 分鐘準時送出
+    if status == "late":
+        late_min = (now_in(market) - push_time(market)).total_seconds() / 60
+        msgs[0] = (f"⚠️ <b>GitHub 排程延遲，本報告晚了約 {late_min:.0f} 分鐘送達（已開盤）</b>，"
+                   f"進場區請以盤中實際價格重新評估。\n\n") + msgs[0]
+    elif not a.force:  # 等到開盤前 10 分鐘準時送出
         wait = (push_time(market) - now_in(market)).total_seconds()
         if wait > 0:
             log.info("等待 %.0f 秒後推播（%s）", wait, push_time(market).strftime("%H:%M %Z"))
-            time.sleep(wait)
+            _sleep(wait)
     telegram.send(msgs, str(md_path), dry_run=a.dry_run)
     log.info("推播完成")
+    if not a.dry_run and not a.force:   # 給 workflow 寫入 bot-state，避免同日其他觸發重複推播
+        (ROOT / "reports" / f"sent_{market}.txt").write_text(today.isoformat())
 
 
 if __name__ == "__main__":

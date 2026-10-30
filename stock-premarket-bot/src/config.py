@@ -12,8 +12,11 @@ FRED_API_KEY = (os.getenv("FRED_API_KEY") or "").strip()  # 可選；沒有就�
 
 # ---- 推播時間 ----
 LEAD_MINUTES = 10           # 開盤前幾分鐘推播
-MAX_EARLY_MINUTES = 60      # 允許比推播時間「提早」多久啟動（其餘時間排程直接結束）
-MAX_LATE_MINUTES = 15       # GitHub cron 延遲時，最晚允許晚幾分鐘仍推播（仍需在開盤前）
+# GitHub 排程常延遲 30~60 分鐘甚至漏跑，所以在推播前 4 小時內排多個觸發，
+# 最先抵達者休眠到 PREP_MINUTES 前才抓資料分析，準點送出；之後抵達的觸發看到「今日已推播」就結束。
+MAX_EARLY_MINUTES = 250     # 最早可在推播前幾分鐘啟動
+PREP_MINUTES = 25           # 推播前幾分鐘開始抓資料 + Claude 分析（含重試的最壞情況約 12 分鐘）
+LATE_GRACE_MINUTES = 180    # 所有觸發都延遲時，推播時間過後多久內仍補送（標示「開盤後送達」）
 
 MARKETS = {
     "us": {"tz": "America/New_York", "open": (9, 30), "calendar": "NYSE", "name": "美股", "flag": "🇺🇸"},

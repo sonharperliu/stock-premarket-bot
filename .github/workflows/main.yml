@@ -1,17 +1,33 @@
 name: Premarket Stock Report
 
-# GitHub cron 只支援 UTC。美股排兩個時間（分別對應夏令 EDT / 冬令 EST），
-# 程式會用 America/New_York 判斷哪一個才是「開盤前 10 分鐘」，另一個自動略過。
-# 提早約 30 分鐘啟動：預留資料抓取 + Claude 分析時間，並緩衝 GitHub 排程延遲，程式會等到準點才推播。
+# ── 排程設計 ────────────────────────────────────────────────────────────────
+# GitHub cron 只支援 UTC，而且尖峰時段常延遲 30~60 分鐘、偶爾漏跑。
+# 因此每個市場在推播前約 4 小時內排多個觸發：
+#   1. 最先抵達的觸發：休眠到推播前 25 分鐘 → 抓最新數據 + Claude 分析 → 準點推播 → 在 bot-state 分支記錄今日已推播
+#   2. 之後抵達的觸發：同市場排隊等待（concurrency），輪到時看到「今日已推播」立即結束
+#   3. 若全部觸發都延遲到推播時間之後：仍補送並標示「開盤後送達」（3 小時內）
+# 程式用 America/New_York / Asia/Taipei 計算真正的推播時間，冬夏令自動處理。
 on:
   schedule:
-    - cron: "50 12 * * 1-5"   # 美股（夏令 EDT）= 紐約 08:50 啟動 → 09:20 推播
-    - cron: "50 13 * * 1-5"   # 美股（冬令 EST）= 紐約 08:50 啟動 → 09:20 推播
-    - cron: "15 0 * * 1-5"    # 台股 = 台北 08:15 啟動 → 08:50 推播
-  # 測試開關：修改 repo 根目錄的 .run-test 並推送 → 立即強制執行一次（commit 訊息含 [tw] 則測台股）
+    # 美股：推播 = 紐約 09:20（夏令 EDT = UTC 13:20；冬令 EST = UTC 14:20）
+    - cron: "47 9 * * 1-5"
+    - cron: "27 10 * * 1-5"
+    - cron: "7 11 * * 1-5"
+    - cron: "47 11 * * 1-5"
+    - cron: "27 12 * * 1-5"
+    - cron: "7 13 * * 1-5"
+    - cron: "47 13 * * 1-5"
+    # 台股：推播 = 台北 08:50 = UTC 00:50（前一個 UTC 日的晚上，週日~週四 = 台北週一~週五）
+    - cron: "37 21 * * 0-4"
+    - cron: "17 22 * * 0-4"
+    - cron: "57 22 * * 0-4"
+    - cron: "37 23 * * 0-4"
+    - cron: "12 0 * * 1-5"
+    - cron: "32 0 * * 1-5"
+  # 測試開關：修改 repo 根目錄 .run-test 並推送 → 執行一次。內容第一個字 us/tw；含 noforce 則走正式排程邏輯
   push:
     branches: [main]
-    paths: [".run-test"]   # .run-test 內容第一個字為 us/tw；含 noforce 則走正式排程的時間窗/休市檢查
+    paths: [".run-test"]
   workflow_dispatch:
     inputs:
       market:
@@ -20,7 +36,7 @@ on:
         options: [us, tw]
         default: us
       force:
-        description: "立即執行（略過時間窗與休市檢查）"
+        description: "立即執行（略過時間窗、休市與今日已推播檢查）"
         type: boolean
         default: true
       dry_run:
@@ -29,7 +45,7 @@ on:
         default: false
 
 permissions:
-  contents: write   # 僅測試模式用來把 log 推到 test-results 分支
+  contents: write   # 寫入 bot-state（今日已推播紀錄）與 test-results 分支
 
 # 程式碼放在 repo 的 stock-premarket-bot/ 子資料夾，所有指令都在該資料夾內執行
 defaults:
@@ -39,13 +55,15 @@ defaults:
 jobs:
   report:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 330   # 最早的觸發可能需休眠約 3.5 小時（公開 repo 的 Actions 分鐘數不計費）
     concurrency:
-      group: premarket-${{ github.event.schedule == '15 0 * * 1-5' && 'tw' || inputs.market || 'us' }}
+      # 同市場的觸發排隊執行，避免重複推播
+      group: premarket-${{ github.event_name == 'push' && 'test' || (contains(fromJSON('["37 21 * * 0-4","17 22 * * 0-4","57 22 * * 0-4","37 23 * * 0-4","12 0 * * 1-5","32 0 * * 1-5"]'), github.event.schedule) && 'tw' || (inputs.market || 'us')) }}
       cancel-in-progress: false
     env:
-      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (github.event.schedule == '15 0 * * 1-5' && 'tw' || 'us') }}
+      MARKET: ${{ github.event_name == 'workflow_dispatch' && inputs.market || (contains(fromJSON('["37 21 * * 0-4","17 22 * * 0-4","57 22 * * 0-4","37 23 * * 0-4","12 0 * * 1-5","32 0 * * 1-5"]'), github.event.schedule) && 'tw' || 'us') }}
       FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+      STATE_DIR: /tmp/bot-state
     steps:
       - uses: actions/checkout@v4
 
@@ -65,9 +83,19 @@ jobs:
           echo "FORCE=$F" >> "$GITHUB_ENV"
           echo "測試模式：market=$M force=$F"
 
-      - name: 時間窗檢查（自動處理冬夏令）
+      - name: 讀取推播紀錄（bot-state 分支）
+        run: |
+          mkdir -p "$STATE_DIR"
+          if git fetch -q --depth 1 origin bot-state 2>/dev/null; then
+            git archive FETCH_HEAD | tar -x -C "$STATE_DIR"
+          fi
+          ls -la "$STATE_DIR"; cat "$STATE_DIR"/last_sent_*.txt 2>/dev/null || echo "（尚無推播紀錄）"
+
+      - name: 時間窗 / 今日是否已推播 檢查（自動處理冬夏令）
         id: gate
-        run: python gate.py "$MARKET" "$FORCE" | tee gate.log
+        run: |
+          echo "trigger=${{ github.event_name }} schedule='${{ github.event.schedule }}' market=$MARKET force=$FORCE"
+          python gate.py "$MARKET" "$FORCE" "$STATE_DIR" | tee gate.log
 
       - name: 安裝套件
         if: steps.gate.outputs.run == 'true'
@@ -78,6 +106,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          ANTHROPIC_FALLBACK_MODEL: ${{ vars.ANTHROPIC_FALLBACK_MODEL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -88,16 +117,49 @@ jobs:
           set -o pipefail
           python main.py $ARGS 2>&1 | tee run.log
 
+      - name: 記錄今日已推播（bot-state 分支）
+        if: steps.gate.outputs.run == 'true' && success()
+        run: |
+          if [ ! -f "reports/sent_${MARKET}.txt" ]; then echo "本次未推播（休市或測試模式），不記錄"; exit 0; fi
+          cp "reports/sent_${MARKET}.txt" "$STATE_DIR/last_sent_${MARKET}.txt"
+          cd "$STATE_DIR"
+          echo "最後更新：$(date -u +%FT%TZ) run=${{ github.run_id }}" > README.md
+          git init -q && git checkout -q -b bot-state
+          git add -A && git -c user.name=premarket-bot -c user.email=bot@users.noreply.github.com commit -qm "sent ${MARKET} $(cat last_sent_${MARKET}.txt)"
+          for i in 1 2 3; do
+            git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" bot-state && break
+            sleep 5
+          done
+          echo "已記錄：${MARKET} $(cat last_sent_${MARKET}.txt)"
+
       - name: 測試模式：把 log 與報告推到 test-results 分支
         if: github.event_name == 'push' && always()
         run: |
           mkdir -p /tmp/out && cp -r reports /tmp/out/ 2>/dev/null || true
-          cp run.log /tmp/out/ 2>/dev/null || echo "no run.log（時間窗或休市檢查已略過）" > /tmp/out/run.log
+          cp run.log /tmp/out/ 2>/dev/null || echo "no run.log（時間窗、休市或今日已推播檢查已略過）" > /tmp/out/run.log
           cp gate.log /tmp/out/ 2>/dev/null || true
+          cp -r "$STATE_DIR" /tmp/out/state 2>/dev/null || true
           cd /tmp/out && git init -q && git checkout -q -b test-results
-          echo "run=${{ github.run_id }} market=$MARKET sha=${{ github.sha }}" > meta.txt
+          echo "run=${{ github.run_id }} market=$MARKET force=$FORCE sha=${{ github.sha }}" > meta.txt
           git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "test run ${{ github.run_id }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" test-results
+
+      - name: 排程執行紀錄（run-logs 分支，供除錯）
+        if: github.event_name == 'schedule' && always()
+        run: |
+          D=$(TZ=Asia/Taipei date +%F)
+          NAME="logs/${D}_${MARKET}_$(date -u +%H%M)utc_${{ github.run_id }}.log"
+          { echo "schedule='${{ github.event.schedule }}' 實際啟動 UTC $(date -u +%FT%TZ)"; cat gate.log 2>/dev/null;
+            grep -E " (INFO|WARNING|ERROR) " run.log 2>/dev/null | tail -60; } > /tmp/this.log
+          rm -rf /tmp/logs && mkdir -p /tmp/logs && cd /tmp/logs && git init -q
+          R="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          for i in 1 2 3; do
+            if git fetch -q --depth 50 "$R" run-logs 2>/dev/null; then git checkout -q -B run-logs FETCH_HEAD; else git checkout -q --orphan run-logs; fi
+            mkdir -p logs && cp /tmp/this.log "$NAME"
+            git add -A && git -c user.name=premarket-bot -c user.email=bot@users.noreply.github.com commit -qm "log $NAME"
+            git push -q "$R" run-logs && break
+            sleep $((RANDOM % 10 + 3))
+          done
 
       - name: 保存報告
         if: steps.gate.outputs.run == 'true' && always()
