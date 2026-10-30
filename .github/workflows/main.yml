@@ -148,12 +148,12 @@ jobs:
           git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "test run ${{ github.run_id }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" test-results
 
-      - name: 排程執行紀錄（run-logs 分支，供除錯）
-        if: github.event_name == 'schedule' && always()
+      - name: 執行紀錄（run-logs 分支，供除錯）
+        if: github.event_name != 'workflow_dispatch' && always()
         run: |
           D=$(TZ=Asia/Taipei date +%F)
           NAME="logs/${D}_${MARKET}_$(date -u +%H%M)utc_${{ github.run_id }}.log"
-          { echo "schedule='${{ github.event.schedule }}' 實際啟動 UTC $(date -u +%FT%TZ)"; cat gate.log 2>/dev/null;
+          { echo "event=${{ github.event_name }} schedule='${{ github.event.schedule }}' 實際啟動 UTC $(date -u +%FT%TZ)"; cat gate.log 2>/dev/null;
             grep -E " (INFO|WARNING|ERROR) " run.log 2>/dev/null | tail -60; } > /tmp/this.log
           rm -rf /tmp/logs && mkdir -p /tmp/logs && cd /tmp/logs && git init -q
           R="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
