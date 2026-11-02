@@ -1,0 +1,2 @@
+event=schedule schedule='7 11 * * 1-5' 實際啟動 UTC 2026-11-02T20:43:47Z
+[gate] market=us force=False last_sent=2026-10-30 -> SKIP：當地 2026-11-02 Mon 15:43 EST，推播時間 09:20：太晚（已過推播時間 384 分鐘）
