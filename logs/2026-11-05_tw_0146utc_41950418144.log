@@ -1,0 +1,10 @@
+event=schedule schedule='37 21 * * 0-4' 實際啟動 UTC 2026-11-05T01:46:11Z
+[gate] market=tw force=False last_sent=2026-11-04 -> LATE：當地 2026-11-05 Thu 09:43 CST，推播時間 08:50：GitHub 排程延遲，已過推播時間 53 分鐘，仍補送
+2026-11-05 01:43:47,380 INFO main: 時間窗檢查：當地 2026-11-05 Thu 09:43 CST，推播時間 08:50：GitHub 排程延遲，已過推播時間 54 分鐘，仍補送
+2026-11-05 01:43:55,292 INFO src.scanner: 價格資料：137 / 139 檔
+2026-11-05 01:43:55,449 INFO main: 第一層完成：掃描 116 檔，候選 12 檔
+2026-11-05 01:44:27,941 INFO main: 第二層完成：12 檔六維度資料
+2026-11-05 01:44:33,851 INFO httpx2: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-11-05 01:46:07,674 INFO src.analyzer: Claude[claude-sonnet-5-5] 用量：input=31743 output=12177 stop=tool_use
+2026-11-05 01:46:07,674 INFO main: 分析完成，耗時 139 秒
+2026-11-05 01:46:09,790 INFO main: 推播完成
