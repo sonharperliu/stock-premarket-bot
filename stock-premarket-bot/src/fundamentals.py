@@ -110,6 +110,12 @@ def collect(ticker: str, us: bool) -> dict:
     except Exception as e:
         log.warning("info 失敗 %s：%s", ticker, e)
     out["moat"] = moat_metrics(tk)
+    try:  # 怪老子六步驟 + 法務會計（Beneish M-Score、FCF 品質、紅旗清單）
+        from .forensics import analyze
+        inf = out.get("info", {})
+        out["financial_health"] = analyze(tk, inf.get("sector"), inf.get("industry"), ticker)
+    except Exception as e:
+        out["financial_health"] = {"available": False, "note": f"財報體檢失敗：{type(e).__name__}"}
     out["next_earnings"] = earnings_date(tk)
     if us:
         out["finviz"] = finviz_snapshot(ticker)

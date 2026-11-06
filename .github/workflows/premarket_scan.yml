@@ -82,6 +82,7 @@ jobs:
           esac
           case "$M" in us|tw) ;; *) echo "::warning::未指定或無效的市場『$M』，預設 us"; M=us ;; esac
           DRY=false; [ "$INPUT_DRY_RUN" = "true" ] && DRY=true
+          if [ "$TRIGGER_EVENT" = "push" ]; then case "$REST" in *dryrun*) DRY=true ;; esac; fi
           echo "MARKET=$M" >> "$GITHUB_ENV"
           echo "FORCE=$F"  >> "$GITHUB_ENV"
           echo "DRY_RUN=$DRY" >> "$GITHUB_ENV"

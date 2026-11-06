@@ -191,6 +191,31 @@ def macro_line(mk: dict) -> str:
     return " | ".join(parts)
 
 
+def financial_appendix(result: dict, cands: dict) -> str:
+    """附錄：精選標的財報體檢明細（程式計算：怪老子六步驟 + Beneish M-Score + FCF 品質）。"""
+    rows = ["\n\n## 附錄：財報體檢（怪老子六步驟 + 法務會計，程式依年報計算）\n",
+            "| 代號 | 燈號 | ROE / 驅動 | 毛利率 / 營益率 | 淨利含金量 | 負債比 / 流動比 | 利息保障 | M-Score | 紅旗 |",
+            "|---|---|---|---|---|---|---|---|---|"]
+    for p in result.get("picks", []):
+        fh = ((cands.get(p.get("ticker")) or {}).get("fundamental") or {}).get("financial_health") or {}
+        if not fh.get("available"):
+            rows.append(f"| {p.get('ticker')} | — | {fh.get('note', '無資料')} | | | | | | |")
+            continue
+        d, pq = fh.get("dupont", {}), fh.get("profit_quality", {})
+        st, so, cq, bm = fh.get("structure", {}), fh.get("solvency", {}), fh.get("cash_quality", {}), fh.get("beneish", {})
+        m = "不適用" if fh.get("financial_sector") else (f"{bm.get('m_score')} {bm.get('zone', '')}" + ("" if bm.get("reliable") else "（資料不足）"))
+        rows.append(f"| {p.get('ticker')} | {fh.get('verdict')} | {d.get('roe_pct')}% {d.get('roe_driver') or ''} | "
+                    f"{pq.get('gross_margin_pct', '—')}% / {pq.get('operating_margin_pct', '—')}% | {cq.get('ocf_to_net_income', '—')} | "
+                    f"{st.get('debt_ratio_pct', '—')}% / {so.get('current_ratio_pct', '—')}% | {so.get('interest_coverage', '—')} | {m} | "
+                    f"{'<br>'.join(fh.get('red_flags', [])) or '無'} |")
+    avoid = [a for a in result.get("avoid", []) if a.get("reason")]
+    if avoid:
+        rows.append("\n**避開名單：** " + "；".join(f"{a.get('ticker')}：{a.get('reason')}" for a in avoid))
+    rows.append("\n> 門檻：ROE ≥ 8%、淨利含金量 ≥ 0.8、流動比 > 150%、速動比 > 100%、短期借款占負債 ≤ 10%、"
+                "長期資金/PP&E > 1、利息保障 > 2、M-Score < -2.22 低風險／> -1.78 高危。金融業不適用 M-Score 與流動比。")
+    return "\n".join(rows)
+
+
 def build_markdown(result: dict, market: str, stamp: str, cands: dict) -> str:
     m = MARKETS[market]
     md = [f"# {m['name']}盤前作戰報告 — {stamp}\n"]
@@ -204,6 +229,7 @@ def build_markdown(result: dict, market: str, stamp: str, cands: dict) -> str:
         md.append(f"| {p.get('rank')} | {p.get('ticker')} | {p.get('name', '')} | {p.get('entry_low')}–{p.get('entry_high')} | "
                   f"{p.get('stop_loss')} | {p.get('take_profit_1')} | {p.get('take_profit_2')} | {p.get('risk_reward')} | "
                   f"{p.get('atr14')} | {p.get('validation', '')} |")
+    md.append(financial_appendix(result, cands))
     md.append("\n\n> 本報告由程式自動產生，僅供研究參考，不構成投資建議。投資有風險，請自行判斷並控制部位。")
     return "\n".join(md)
 

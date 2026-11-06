@@ -68,6 +68,12 @@ def render_messages(result: dict, market: str, stamp: str, macro_line: str) -> l
         if score_line:
             b.append(f"<code>{e(score_line)}</code>")
         b.append(f"📝 {e(p.get('thesis', ''))}")
+        if p.get("health_line"):
+            b.append(f"📑 財報 {e(p.get('health_verdict') or '')} {e(p['health_line'])}")
+            for f in p.get("health_flags") or []:
+                b.append(f"   {e(f)}")
+        elif p.get("fundamental_check"):
+            b.append(f"📑 財報 {e(p['fundamental_check'])}")
         if p.get("conflicts") and p.get("conflicts") != "無":
             b.append(f"⚠️ {e(p['conflicts'])}")
         if p.get("key_risks"):

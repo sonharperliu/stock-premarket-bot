@@ -17,6 +17,26 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
 1. 總經與流動性（Macro Regime）：利率路徑（Fed 期貨隱含機率）、殖利率曲線、通膨/就業趨勢、美元淨流動性、信用利差、VIX、期貨盤前走勢、今明兩日重磅數據。判定 risk-on / neutral / risk-off。
 2. 板塊輪動：用產業 ETF 的相對強弱(RS)、量比、CMF 資金流，判斷資金正流入/流出哪些板塊，與總經體制是否一致。
 3. 個股六維度評分（各 1–10 分）：總經順風度、基本面（成長/獲利/估值）、護城河（毛利穩定度、ROIC、研發強度、FCF）、技術面（趨勢、RSI、MACD、ATR、支撐壓力）、籌碼面（法人/融資券/大戶 或 選擇權異動/空單比/機構持股）、消息面（催化劑與風險）。
+3b. 財報體質審查（基本面分數的核心依據，資料在 candidates[*].fundamental.financial_health，數字由程式依年報計算）：
+   【怪老子財報分析】以資產負債表為中心串聯四大報表：
+   - 不看表象 EPS，以 ROE（淨利/平均權益）與杜邦三因子（淨利率 × 總資產周轉率 × 權益乘數）判斷獲利模式；
+     ROE 下滑時說明是淨利率、周轉率還是權益乘數造成（roe_decline_cause）。
+   - 依 business_type 判讀：流動資產周轉型看存貨/應收天數；產能利用型看 PP&E 周轉率。
+   - 地雷科目：無形資產+商譽占比（> 5% 留意、> 30% 高危）、非控制權益占比（> 10%）、現金過高拖累 ROE。
+   - 本業 vs 業外：業外占稅前淨利過高時須指出，一次性業外獲利不可納入常態 EPS 與本益比估值；毛利率與營益率同步下滑代表競爭力轉弱。
+   - 償債：流動比率 > 150%、速動比率 > 100%、短期借款占負債 ≤ 10%、長期資金/PP&E > 1（< 1 為以短支長）、利息保障倍數 > 2。
+   - 現金落袋：營業現金流/淨利（淨利含金量）應 ≥ 0.8；FCF 是否足以支應現金股利。
+   【法務會計（做空機構視角）】
+   - Beneish M-Score：< -2.22 低風險、-2.22～-1.78 灰色地帶、> -1.78 高度操縱嫌疑；over_threshold 列出超標指標，
+     對應手法：DSRI 塞貨/提前認列、GMI 毛利惡化、AQI 費用資本化、SGI 高成長壓力、DEPI 延長折舊年限、LVGI 債務壓力、TATA 獲利缺現金支撐。
+     neutral_substituted 為缺資料以中性值替代的指標；reliable=false 時不得據 M-Score 下結論。
+   - FCF 品質：OCF 是否靠拖欠應付帳款美化（payables_share_of_ocf_pct）、應收/存貨成長是否遠高於營收。
+   【排雷規則（必須遵守）】
+   - verdict = 🔴（任一高危紅旗，例如 M-Score > -1.78 且資料可靠、營業現金流為負、本業虧損靠業外、以短支長、利息保障 < 2）：
+     預設不得列入 picks，應列入 avoid 並寫明紅旗；若技術與籌碼極強而仍要納入，conviction 不得高於 2，且 conflicts 必須寫明。
+   - verdict = 🟡：fundamental 分數不得高於 6，並在 conflicts 說明。
+   - 金融業（financial_sector=true）M-Score 與流動比率不適用，只用 ROE/ROA/權益乘數判斷，不可因此扣分。
+   - financial_health 不可用（available=false）時說明「年報資料不足」，基本面分數以估值與成長數據為主並保守評分。
 4. 交叉驗證（最重要）：找出維度之間的矛盾並據此降評，例如「技術突破但法人連賣」、「基本面強但估值過高且 RSI>75」、「財報日在 3 天內」、「板塊資金流出」。只有多數維度共振的標的才能給高信心。
 5. 買賣點定價：每檔都附有程式計算的 ATR 基準計畫（baseline_plan）。你可依支撐壓力、樞紐點、缺口與消息調整，但必須遵守：
    - 做多：停損 < 進場區下緣 < 進場區上緣 < 停利1 < 停利2
@@ -31,7 +51,9 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
 - picks 依信心排序，數量等於使用者指定數量（合格標的不足可少於指定數，並在報告說明）
 - conviction 為 1-5 整數；價格欄位為數字；position_size_pct 單檔不超過 10%，risk-off 時整體降低
 - thesis 2-3 句並引用具體數據；ticker 必須與 candidates 的 key 完全相同
-- report_markdown 為繁體中文 Markdown 完整報告，結構：一、總經與流動性 二、板塊輪動 三、精選標的逐檔分析（六維度評分表 + 買賣點，每檔約 150-250 字）四、今日事件與風險 五、操作策略與部位建議。全文控制在 6000 字以內。
+- fundamental_check：一句話財報體檢（ROE 與驅動模式、淨利含金量、償債、M-Score 結論）；financial_red_flags：該檔財報紅旗
+- avoid 中因財報紅旗而排除的標的，reason 需寫出具體紅旗與數字
+- report_markdown 為繁體中文 Markdown 完整報告，結構：一、總經與流動性 二、板塊輪動 三、精選標的逐檔分析（六維度評分表 + 財報體檢 + 買賣點，每檔約 150-250 字）四、財報排雷（被排除標的與紅旗）五、今日事件與風險 六、操作策略與部位建議。全文控制在 6500 字以內。
 全部使用繁體中文。"""
 
 _STR = {"type": "string"}
@@ -54,7 +76,10 @@ REPORT_TOOL = {
                 "conviction": {"type": "integer", "minimum": 1, "maximum": 5}, "setup": _STR, "thesis": _STR,
                 "scores": {"type": "object", "properties": {k: _NUM for k in
                            ["macro", "fundamental", "moat", "technical", "chips", "news"]}},
-                "conflicts": _STR, "entry_low": _NUM, "entry_high": _NUM, "stop_loss": _NUM,
+                "conflicts": _STR,
+                "fundamental_check": _STR,       # 一句話財報體檢，例：ROE 28%（高淨利率型）、OCF/淨利 1.3、M-Score -2.6 低風險
+                "financial_red_flags": _STRS,     # 財報紅旗（無則空陣列）
+                "entry_low": _NUM, "entry_high": _NUM, "stop_loss": _NUM,
                 "take_profit_1": _NUM, "take_profit_2": _NUM, "risk_reward": _NUM, "holding_period": _STR,
                 "position_size_pct": _NUM, "catalysts": _STRS, "key_risks": _STRS},
                 "required": ["ticker", "name", "conviction", "setup", "thesis", "scores", "entry_low", "entry_high",
@@ -214,6 +239,8 @@ def snap_tw_prices(p: dict) -> None:
         p["entry_low"] = p["entry_high"]
 
 
+# Telegram 只顯示 2 個紅旗：依嚴重度排序（造假嫌疑與現金斷流優先）
+RED_FLAG_PRIORITY = ("M-Score", "營業現金流為負", "本業虧損", "稅前虧損", "以短支長", "利息保障", "流動比率", "淨利含金量", "無形資產")
 PRICE_KEYS = ("entry_low", "entry_high", "stop_loss", "take_profit_1", "take_profit_2")
 MIN_RR = 1.5
 
@@ -281,6 +308,19 @@ def validate_picks(result: dict, candidates: dict[str, dict]) -> dict:
                 snap_tw_prices(p)
             _, rr, _ = _check_plan(p, atr_v)
             notes.append("已改用 ATR 基準計畫")
+        # 財報體檢（程式計算，不依賴 Claude 文字）；🔴 紅旗標的信心上限 2
+        fh = (cand.get("fundamental") or {}).get("financial_health") or {}
+        if fh.get("available"):
+            p["health_verdict"], p["health_line"] = fh.get("verdict"), fh.get("summary_line")
+            reds = [f for f in fh.get("red_flags", []) if f.startswith("🔴")]
+            reds.sort(key=lambda f: next((i for i, k in enumerate(RED_FLAG_PRIORITY) if k in f), len(RED_FLAG_PRIORITY)))
+            p["health_flags"] = reds[:2]
+            try:
+                if fh.get("verdict") == "🔴" and int(float(p.get("conviction") or 0)) > 2:
+                    p["conviction"] = 2
+                    notes.append("財報🔴紅旗，信心上限調為 2")
+            except Exception:
+                pass
         p["risk_reward"] = round(rr, 2)
         p["validation"] = "；".join(notes) if notes else "通過"
         p["atr14"] = atr_v
