@@ -102,9 +102,10 @@ def is_financial(sector: str | None, industry: str | None, ticker: str) -> bool:
 def dupont(inc, bal, i=0) -> dict:
     ni, rev = _v(inc, "ni", i), _v(inc, "rev", i)
     avg_ta, avg_eq = _avg(bal, "ta", i), _avg(bal, "eq", i)
-    npm, at, em = _div(ni, rev), _div(rev, avg_ta), _div(avg_ta, avg_eq)
-    return {"roe": _div(ni, avg_eq), "roa": _div(ni, avg_ta), "net_margin": npm, "asset_turnover": at,
-            "equity_multiplier": em}
+    neg_eq = avg_eq is not None and avg_eq <= 0   # 大量買回庫藏股等造成權益為負，ROE 與權益乘數無意義
+    npm, at = _div(ni, rev), _div(rev, avg_ta)
+    return {"roe": None if neg_eq else _div(ni, avg_eq), "roa": _div(ni, avg_ta), "net_margin": npm,
+            "asset_turnover": at, "equity_multiplier": None if neg_eq else _div(avg_ta, avg_eq), "negative_equity": neg_eq}
 
 
 def beneish(inc, bal, cf) -> dict:
@@ -184,7 +185,10 @@ def analyze(tk, sector: str | None = None, industry: str | None = None, ticker: 
             roe_cause = min(ch, key=ch.get)
     dup = {"roe_pct": _pct(roe), "roe_prev_pct": _pct(d1["roe"]), "roa_pct": _pct(d0["roa"]), "net_margin_pct": _pct(npm),
            "asset_turnover": _r(at), "equity_multiplier": _r(em), "roe_driver": driver, "roe_decline_cause": roe_cause}
-    if roe is not None and roe < 0.08:
+    dup["negative_equity"] = d0["negative_equity"]
+    if d0["negative_equity"]:
+        flags.append(("🟡", "股東權益為負（多為大量買回庫藏股），ROE 與權益乘數不適用，改看 ROA 與現金流"))
+    elif roe is not None and 0 <= roe < 0.08:
         flags.append(("🟡", f"ROE {roe * 100:.1f}% 偏低（< 8%）"))
 
     out = {"available": True, "fiscal_years": years, "financial_sector": fin, "dupont": dup}
@@ -212,10 +216,9 @@ def analyze(tk, sector: str | None = None, industry: str | None = None, ticker: 
     struct = {"debt_ratio_pct": _pct(debt_ratio), "current_assets_pct": _pct(ca_pct), "ppe_pct": _pct(ppe_pct),
               "cash_pct": _pct(_div(cash, ta)), "intangible_goodwill_pct": _pct(_div(intang, ta)),
               "non_controlling_interest_pct": _pct(_div(nci, teq)), "business_type": btype}
-    if (_div(intang, ta) or 0) > 0.30:
-        flags.append(("🔴", f"無形資產+商譽占總資產 {_div(intang, ta) * 100:.0f}%（> 30%，併購溢價/減損風險）"))
-    elif (_div(intang, ta) or 0) > 0.05:
-        flags.append(("🟡", f"無形資產+商譽占總資產 {_div(intang, ta) * 100:.0f}%（> 5%）"))
+    intang_pct = _div(intang, ta) or 0
+    if 0.05 < intang_pct <= 0.30:
+        flags.append(("🟡", f"無形資產+商譽占總資產 {intang_pct * 100:.0f}%（> 5%）"))
     if (_div(nci, teq) or 0) > 0.10:
         flags.append(("🟡", f"非控制權益占總權益 {_div(nci, teq) * 100:.0f}%（> 10%，合併數字高估母公司獲利）"))
     if (_div(cash, ta) or 0) > 0.5:
@@ -240,6 +243,8 @@ def analyze(tk, sector: str | None = None, industry: str | None = None, ticker: 
                             f"{m1['opm'] * 100:.1f}→{m0['opm'] * 100:.1f}%），產品競爭力或成本控管轉弱"))
     if op0 is not None and op0 <= 0 and (pt0 or 0) > 0:
         flags.append(("🔴", "本業虧損但靠業外撐出稅前獲利"))
+    elif op0 is not None and op0 < 0:
+        flags.append(("🔴", f"本業虧損（營益率 {_div(op0, _v(inc, 'rev')) * 100:.1f}%），不具持續本業獲利能力"))
     elif (nonop_share or 0) > 0.30:
         flags.append(("🟡", f"業外占稅前淨利 {nonop_share * 100:.0f}%（需確認是否一次性，不可納入常態 EPS）"))
     if (pt0 or 0) < 0 and (_v(inc, "ni") or 0) > 0:
@@ -273,11 +278,10 @@ def analyze(tk, sector: str | None = None, industry: str | None = None, ticker: 
             "working_capital_positive": (ca - cl > 0) if ca is not None and cl is not None else None,
             "short_debt_to_liabilities_pct": _pct(_div(std, tl)),
             "long_capital_to_ppe": _r(_div((eq_total or 0) + (ncl or 0), ppe)) if ppe else None,
-            "interest_coverage": _r(_div(ebit, intexp), 1) if intexp else None}
+            "interest_coverage": _r(_div(ebit, intexp), 1) if intexp and ebit is not None and ebit > 0 else None}
     cr, qr = _div(ca, cl), _div((ca or 0) - inv - prepaid, cl)
-    if cr is not None and cr < 1:
-        flags.append(("🔴", f"流動比率 {cr * 100:.0f}%（< 100%，營運資金為負）"))
-    elif cr is not None and cr < 1.5:
+    weak_current = cr is not None and cr < 1
+    if cr is not None and 1 <= cr < 1.5:
         flags.append(("🟡", f"流動比率 {cr * 100:.0f}%（< 150%）"))
     if qr is not None and qr < 1 and (cr or 0) >= 1:
         flags.append(("🟡", f"速動比率 {qr * 100:.0f}%（< 100%）"))
@@ -314,6 +318,19 @@ def analyze(tk, sector: str | None = None, industry: str | None = None, ticker: 
     if fcf is not None and div and fcf < div:
         flags.append(("🟡", "自由現金流不足以支應現金股利"))
 
+    # ---------- 組合判斷：單一結構指標在美股常見（併購型、預收款型），需搭配獲利/現金/償債弱點才列 🔴 ----------
+    weak_profit = (roe is not None and roe < 0.08) or (ni is not None and ocf is not None and ni > 0 and _div(ocf, ni) < 0.8)
+    if intang_pct > 0.30:
+        if weak_profit:
+            flags.append(("🔴", f"無形資產+商譽占總資產 {intang_pct * 100:.0f}% 且獲利/現金品質偏弱（減損風險高）"))
+        else:
+            flags.append(("🟡", f"無形資產+商譽占總資產 {intang_pct * 100:.0f}%（併購型成長，需追蹤商譽減損）"))
+    if weak_current:
+        weak_cover = (solv["interest_coverage"] is not None and solv["interest_coverage"] < 2) or (ocf is not None and ocf < 0)
+        flags.append(("🔴" if weak_cover else "🟡",
+                      f"流動比率 {cr * 100:.0f}%（< 100%）" + ("且償債/現金流弱，短期周轉風險" if weak_cover
+                                                         else "；若為預收款/公用事業型可接受，但需留意")))
+
     # ---------- 法務會計：Beneish M-Score ----------
     bm = beneish(inc, bal, cf)
     if bm["reliable"] and bm["m_score"] > -1.78:
@@ -328,7 +345,8 @@ def analyze(tk, sector: str | None = None, industry: str | None = None, ticker: 
         "structure": struct, "profit_quality": profit, "turnover": turn, "solvency": solv, "cash_quality": cashq,
         "beneish": bm, "red_flags": [f"{s} {t}" for s, t in flags], "verdict": verdict,
         "summary_line": "｜".join(x for x in [
-            f"ROE {dup['roe_pct']}%({(driver or '').split('（')[0]})" if dup["roe_pct"] is not None else None,
+            f"ROE {dup['roe_pct']}%({(driver or '').split('（')[0]})" if dup["roe_pct"] is not None else
+            ("權益為負" if dup.get("negative_equity") else None),
             f"OCF/淨利 {cashq['ocf_to_net_income']}" if cashq["ocf_to_net_income"] is not None else None,
             f"負債比 {struct['debt_ratio_pct']}%" if struct["debt_ratio_pct"] is not None else None,
             f"M {bm['m_score']}{bm['zone'][:1]}" if bm["reliable"] else "M-Score 資料不足",

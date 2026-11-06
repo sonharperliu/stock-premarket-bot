@@ -32,7 +32,9 @@ SYSTEM_PROMPT = """你是一位擁有 30 年資歷的華爾街資深投資組合
      neutral_substituted 為缺資料以中性值替代的指標；reliable=false 時不得據 M-Score 下結論。
    - FCF 品質：OCF 是否靠拖欠應付帳款美化（payables_share_of_ocf_pct）、應收/存貨成長是否遠高於營收。
    【排雷規則（必須遵守）】
-   - verdict = 🔴（任一高危紅旗，例如 M-Score > -1.78 且資料可靠、營業現金流為負、本業虧損靠業外、以短支長、利息保障 < 2）：
+   - 美股常見的併購型（無形資產+商譽高）、預收款型/公用事業（流動比率 < 100%）、大量庫藏股（權益為負）單獨出現只列 🟡，
+     程式已依「是否同時伴隨獲利、現金或償債弱點」決定是否升為 🔴，請以程式燈號為準，不要用台股製造業門檻重判。
+   - verdict = 🔴（任一高危紅旗，例如 M-Score > -1.78 且資料可靠、營業現金流為負、本業虧損、以短支長、利息保障 < 2）：
      預設不得列入 picks，應列入 avoid 並寫明紅旗；若技術與籌碼極強而仍要納入，conviction 不得高於 2，且 conflicts 必須寫明。
    - verdict = 🟡：fundamental 分數不得高於 6，並在 conflicts 說明。
    - 金融業（financial_sector=true）M-Score 與流動比率不適用，只用 ROE/ROA/權益乘數判斷，不可因此扣分。
@@ -240,7 +242,7 @@ def snap_tw_prices(p: dict) -> None:
 
 
 # Telegram 只顯示 2 個紅旗：依嚴重度排序（造假嫌疑與現金斷流優先）
-RED_FLAG_PRIORITY = ("M-Score", "營業現金流為負", "本業虧損", "稅前虧損", "以短支長", "利息保障", "流動比率", "淨利含金量", "無形資產")
+RED_FLAG_PRIORITY = ("M-Score", "營業現金流為負", "本業虧損", "稅前虧損", "以短支長", "利息保障", "淨利含金量", "流動比率", "無形資產")
 PRICE_KEYS = ("entry_low", "entry_high", "stop_loss", "take_profit_1", "take_profit_2")
 MIN_RR = 1.5
 
