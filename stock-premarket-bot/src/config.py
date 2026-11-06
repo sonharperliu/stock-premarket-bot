@@ -12,15 +12,18 @@ FRED_API_KEY = (os.getenv("FRED_API_KEY") or "").strip()  # 可選；沒有就�
 
 # ---- 推播時間 ----
 LEAD_MINUTES = 10           # 開盤前幾分鐘推播
-# GitHub 排程常延遲 30~60 分鐘甚至漏跑，所以在推播前 4 小時內排多個觸發，
-# 最先抵達者休眠到 PREP_MINUTES 前才抓資料分析，準點送出；之後抵達的觸發看到「今日已推播」就結束。
-MAX_EARLY_MINUTES = 250     # 最早可在推播前幾分鐘啟動
-PREP_MINUTES = 25           # 推播前幾分鐘開始抓資料 + Claude 分析（含重試的最壞情況約 12 分鐘）
-LATE_GRACE_MINUTES = 180    # 所有觸發都延遲時，推播時間過後多久內仍補送（標示「開盤後送達」）
+# 在視窗內啟動的觸發：休眠到推播前 PREP_MINUTES 才抓資料 + Claude 分析，於推播時間（開盤前 LEAD_MINUTES）送出。
+# 視窗結束後才抵達、且今日尚未推播 → 不送過時報告，改發一則 Telegram 漏發告警（每市場每日一次）。
+PREP_MINUTES = 25           # 推播前幾分鐘開始分析（含 Claude 重試的最壞情況約 12 分鐘）
 
+# window：允許「啟動」的當地時間視窗。以市場當地時間定義，冬夏令由 zoneinfo 自動處理：
+#   美股 07:50–09:00 紐約 = 夏令(EDT) 台北 19:50–21:00；冬令(EST) 台北 20:50–22:00
+#   台股 06:30–08:50 台北
 MARKETS = {
-    "us": {"tz": "America/New_York", "open": (9, 30), "calendar": "NYSE", "name": "美股", "flag": "🇺🇸"},
-    "tw": {"tz": "Asia/Taipei", "open": (9, 0), "calendar": "XTAI", "name": "台股", "flag": "🇹🇼"},
+    "us": {"tz": "America/New_York", "open": (9, 30), "window": ((7, 50), (9, 0)),
+           "calendar": "NYSE", "name": "美股", "flag": "🇺🇸"},
+    "tw": {"tz": "Asia/Taipei", "open": (9, 0), "window": ((6, 30), (8, 50)),
+           "calendar": "XTAI", "name": "台股", "flag": "🇹🇼"},
 }
 
 # ---- 篩選數量 ----

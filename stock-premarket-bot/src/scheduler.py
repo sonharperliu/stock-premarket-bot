@@ -1,12 +1,12 @@
-"""時區 / 冬夏令 / 休市日判斷。
+"""時區 / 冬夏令 / 時間視窗 / 休市日判斷（守門員）。
 
-GitHub Actions 的 cron 只吃 UTC，無法表達「紐約時間 09:20」，而且常延遲 30~60 分鐘。
-做法：workflow 在推播前約 4 小時內排多個 UTC 觸發（涵蓋夏令 EDT 與冬令 EST），
-程式用 zoneinfo 計算「今天真正的推播時間」：
-  run  ：在時間窗內 → 休眠到推播前 25 分鐘再分析，準點送出
-  late ：所有觸發都延遲到推播時間之後 → 仍補送並標示「開盤後送達」
-  skip ：太早 / 太晚 / 週末 / 今日已推播
-一年四季都不用改設定。
+不比對 cron 字串、不依賴 datetime.now().dst()：一律以 zoneinfo 取得市場「當地時間」再判斷，
+所以不論是 GitHub 排程（可能延遲數小時）、外部 cron 的 repository_dispatch、或手動觸發，判斷方式都一樣：
+  run    ：在當地啟動視窗內 → 休眠到推播前 25 分鐘再分析，於開盤前 10 分鐘送出
+  early  ：視窗開始前 → 結束（交給較晚的觸發），不告警
+  sent   ：今日已推播 → 結束，不告警
+  weekend：週末 → 結束，不告警
+  missed ：視窗已過且今日尚未推播 → 不送過時報告，發 Telegram 漏發告警（每日一次）
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from .config import LATE_GRACE_MINUTES, LEAD_MINUTES, MARKETS, MAX_EARLY_MINUTES
+from .config import LEAD_MINUTES, MARKETS
 
 log = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,24 +35,43 @@ def push_time(market: str, now: datetime | None = None) -> datetime:
     return open_dt - timedelta(minutes=LEAD_MINUTES)
 
 
+def window(market: str, now: datetime | None = None) -> tuple[datetime, datetime]:
+    local = now_in(market, now)
+    (h1, m1), (h2, m2) = MARKETS[market]["window"]
+    return (datetime.combine(local.date(), time(h1, m1), tzinfo=local.tzinfo),
+            datetime.combine(local.date(), time(h2, m2), tzinfo=local.tzinfo))
+
+
+def clock_info(now: datetime | None = None) -> dict:
+    """除錯資訊：台北 / 紐約當地時間、時區縮寫（EDT/EST）、是否夏令。"""
+    now = now or datetime.now(ZoneInfo("UTC"))
+    tpe = now.astimezone(ZoneInfo("Asia/Taipei"))
+    ny = now.astimezone(ZoneInfo("America/New_York"))
+    return {"utc": now.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+            "taipei": tpe.strftime("%Y-%m-%d %a %H:%M:%S"),
+            "new_york": ny.strftime("%Y-%m-%d %a %H:%M:%S"),
+            "ny_tz": ny.tzname(), "ny_dst": bool(ny.dst())}
+
+
 def check_window(market: str, now: datetime | None = None, sent_date: str | None = None) -> tuple[str, float, str]:
-    """回傳 (狀態 run/late/skip, 距推播時間的分鐘數, 說明)。只用標準庫，可在安裝套件前先跑。
-    sent_date：bot-state 記錄的「最近一次推播的當地日期」，等於今天就不重複推播。"""
+    """回傳 (狀態, 距推播時間的分鐘數, 說明)。狀態：run / early / sent / weekend / missed。
+    只用標準庫，可在安裝套件前執行。sent_date：bot-state 記錄的最近一次推播的當地日期。"""
     local = now_in(market, now)
     target = push_time(market, now)
+    w_start, w_end = window(market, now)
     mins = (target - local).total_seconds() / 60
-    where = f"當地 {local:%Y-%m-%d %a %H:%M %Z}，推播時間 {target:%H:%M}"
+    where = (f"{MARKETS[market]['name']}當地 {local:%Y-%m-%d %a %H:%M %Z}，"
+             f"啟動視窗 {w_start:%H:%M}–{w_end:%H:%M}，推播 {target:%H:%M}")
     if local.weekday() >= 5:
-        return "skip", mins, f"{where}：週末"
+        return "weekend", mins, f"{where}：週末不推播"
     if sent_date and sent_date.strip() == local.date().isoformat():
-        return "skip", mins, f"{where}：今日已推播，不重複發送"
-    if mins > MAX_EARLY_MINUTES:
-        return "skip", mins, f"{where}：太早（距推播 {mins:.0f} 分鐘，交給較晚的觸發）"
-    if mins >= -(LEAD_MINUTES - 1):
-        return "run", mins, f"{where}：距推播 {mins:.0f} 分鐘"
-    if mins >= -LATE_GRACE_MINUTES:
-        return "late", mins, f"{where}：GitHub 排程延遲，已過推播時間 {-mins:.0f} 分鐘，仍補送"
-    return "skip", mins, f"{where}：太晚（已過推播時間 {-mins:.0f} 分鐘）"
+        return "sent", mins, f"{where}：今日已推播，不重複發送"
+    if local < w_start:
+        return "early", mins, f"{where}：尚未到啟動視窗（早 {(w_start - local).total_seconds() / 60:.0f} 分鐘），交給較晚的觸發"
+    if local <= w_end:
+        return "run", mins, f"{where}：在視窗內，距推播 {mins:.0f} 分鐘"
+    return "missed", mins, (f"{where}：觸發抵達時已超過視窗 {(local - w_end).total_seconds() / 60:.0f} 分鐘，"
+                            f"今日尚未推播 → 漏發")
 
 
 # ------------------------------------------------------------------ 休市日

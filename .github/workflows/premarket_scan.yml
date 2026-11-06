@@ -1,0 +1,180 @@
+name: Premarket Scan (TW / US)
+
+# ── 觸發方式 ─────────────────────────────────────────────────────────────────
+# 實測（2026/11/02–11/06）：GitHub 的 schedule 事件本身會晚 3～10 小時才建立（不是排隊），
+# 單靠 cron 無法準時。因此：
+#   ● 主要：外部精準 cron（cron-job.org 等）呼叫 repository_dispatch → 幾秒內啟動（設定見 README）
+#   ● 備援：下方 GitHub cron（若 GitHub 準時則照常推播；若延遲到視窗之後則發 Telegram 漏發告警）
+# 不論哪種觸發，守門員都以「市場當地時間 + 交易所行事曆」判斷，冬夏令自動處理，不比對 cron 字串。
+on:
+  schedule:
+    - cron: "18 23 * * 0-4"   # 台股：台北 07:18（週一～五）
+    - cron: "8 12 * * 1-5"    # 美股夏令 EDT：台北 20:08 = 紐約 08:08（冬令時為紐約 07:08，守門員判定太早而讓給下一個）
+    - cron: "8 13 * * 1-5"    # 美股冬令 EST：台北 21:08 = 紐約 08:08（夏令時為紐約 09:08，若當日已推播則略過）
+  repository_dispatch:
+    types: [premarket]        # body: {"event_type":"premarket","client_payload":{"market":"us"}}（可加 "force": true）
+  workflow_dispatch:
+    inputs:
+      market:
+        description: "市場"
+        type: choice
+        options: [us, tw]
+        default: us
+      force:
+        description: "立即執行（略過時間視窗、休市與今日已推播檢查）"
+        type: boolean
+        default: true
+      dry_run:
+        description: "只印在 log，不發 Telegram"
+        type: boolean
+        default: false
+  # 測試開關：修改 repo 根目錄 .run-test 並推送。內容第一個字 us/tw；含 noforce 則走正式守門員邏輯
+  push:
+    branches: [main]
+    paths: [".run-test"]
+
+permissions:
+  contents: write   # 寫入 bot-state（今日已推播 / 已告警）、run-logs、test-results 分支
+
+defaults:
+  run:
+    working-directory: stock-premarket-bot
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180   # 視窗最早啟動時需休眠至推播前 25 分鐘（台股最多約 2 小時）
+    concurrency:
+      # 同市場的觸發排隊執行；後到者輪到時看到「今日已推播」即結束，不會重複推播
+      group: premarket-${{ github.event_name == 'push' && 'test' || (github.event.schedule == '18 23 * * 0-4' && 'tw') || github.event.client_payload.market || inputs.market || 'us' }}
+      cancel-in-progress: false
+    env:
+      STATE_DIR: /tmp/bot-state
+      TRIGGER_EVENT: ${{ github.event_name }}
+      TRIGGER_SCHEDULE: ${{ github.event.schedule }}
+      PAYLOAD_MARKET: ${{ github.event.client_payload.market }}
+      PAYLOAD_FORCE: ${{ github.event.client_payload.force }}
+      INPUT_MARKET: ${{ inputs.market }}
+      INPUT_FORCE: ${{ inputs.force }}
+      INPUT_DRY_RUN: ${{ inputs.dry_run }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5   # 不開 pip cache：略過執行時沒有安裝套件，cache 後置步驟會失敗並把整次標成 failure
+        with:
+          python-version: "3.11"
+
+      - name: 決定市場與參數（依觸發來源，絕不留空字串）
+        run: |
+          M=""; F=false
+          case "$TRIGGER_EVENT" in
+            schedule)            if [ "$TRIGGER_SCHEDULE" = "18 23 * * 0-4" ]; then M=tw; else M=us; fi ;;
+            repository_dispatch) M="$PAYLOAD_MARKET"; [ "$PAYLOAD_FORCE" = "true" ] && F=true ;;
+            workflow_dispatch)   M="$INPUT_MARKET";   [ "$INPUT_FORCE" = "true" ] && F=true ;;
+            push)                read -r M REST < ../.run-test || true; F=true
+                                 case "$REST" in *noforce*) F=false ;; esac ;;
+          esac
+          case "$M" in us|tw) ;; *) echo "::warning::未指定或無效的市場『$M』，預設 us"; M=us ;; esac
+          DRY=false; [ "$INPUT_DRY_RUN" = "true" ] && DRY=true
+          echo "MARKET=$M" >> "$GITHUB_ENV"
+          echo "FORCE=$F"  >> "$GITHUB_ENV"
+          echo "DRY_RUN=$DRY" >> "$GITHUB_ENV"
+          echo "觸發來源=$TRIGGER_EVENT 排程='$TRIGGER_SCHEDULE' → MARKET=$M FORCE=$F DRY_RUN=$DRY"
+
+      - name: 讀取推播紀錄（bot-state 分支）
+        run: |
+          mkdir -p "$STATE_DIR"
+          if git fetch -q --depth 1 origin bot-state 2>/dev/null; then
+            # git archive 在子資料夾執行只會打包該子資料夾，必須在 repo 根目錄執行
+            git -C "$GITHUB_WORKSPACE" archive FETCH_HEAD | tar -x -C "$STATE_DIR"
+            if ! ls "$STATE_DIR"/last_*.txt >/dev/null 2>&1; then
+              echo "::error::bot-state 分支存在但讀不到紀錄，為避免重複推播而中止"; exit 1
+            fi
+          fi
+          for f in "$STATE_DIR"/last_*.txt; do [ -f "$f" ] && echo "$(basename "$f")：$(cat "$f")"; done; true
+
+      - name: 守門員（台北/紐約時間、EDT/EST、視窗判斷、漏發告警）
+        id: gate
+        run: |
+          ARGS="gate --market $MARKET --state-dir $STATE_DIR"
+          [ "$FORCE" = "true" ] && ARGS="$ARGS --force"
+          [ "$DRY_RUN" = "true" ] && ARGS="$ARGS --dry-run"
+          python sp500_tw50_claude_telegram.py $ARGS | tee gate.log
+
+      - name: 安裝套件
+        if: steps.gate.outputs.run == 'true'
+        run: pip install -r requirements.txt
+
+      - name: 執行分析並推播（含休市日檢查）
+        if: steps.gate.outputs.run == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          ANTHROPIC_FALLBACK_MODEL: ${{ vars.ANTHROPIC_FALLBACK_MODEL }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          ARGS="run --market $MARKET --state-dir $STATE_DIR"
+          [ "$FORCE" = "true" ] && ARGS="$ARGS --force"
+          [ "$DRY_RUN" = "true" ] && ARGS="$ARGS --dry-run"
+          set -o pipefail
+          python sp500_tw50_claude_telegram.py $ARGS 2>&1 | tee run.log
+
+      - name: 記錄今日已推播 / 已告警（bot-state 分支）
+        if: always()
+        run: |
+          CHANGED=false
+          for k in sent alert; do
+            if [ -f "reports/${k}_${MARKET}.txt" ]; then
+              cp "reports/${k}_${MARKET}.txt" "$STATE_DIR/last_${k}_${MARKET}.txt"; CHANGED=true
+              echo "記錄 last_${k}_${MARKET} = $(cat reports/${k}_${MARKET}.txt)"
+            fi
+          done
+          [ "$CHANGED" = "true" ] || { echo "無需更新"; exit 0; }
+          cd "$STATE_DIR" && rm -rf .git
+          echo "最後更新：$(date -u +%FT%TZ) run=${{ github.run_id }}" > README.md
+          git init -q && git checkout -q -b bot-state
+          git add -A && git -c user.name=premarket-bot -c user.email=bot@users.noreply.github.com commit -qm "state ${MARKET} $(date -u +%FT%TZ)"
+          for i in 1 2 3; do
+            git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" bot-state && break
+            sleep 5
+          done
+
+      - name: 執行紀錄（run-logs 分支，供除錯）
+        if: always()
+        run: |
+          D=$(TZ=Asia/Taipei date +%F)
+          NAME="logs/${D}_${MARKET}_$(date -u +%H%M)utc_${{ github.run_id }}.log"
+          { echo "event=$TRIGGER_EVENT schedule='$TRIGGER_SCHEDULE' 結束 UTC $(date -u +%FT%TZ)"; cat gate.log 2>/dev/null;
+            grep -E " (INFO|WARNING|ERROR) |休市|除錯|時間" run.log 2>/dev/null | tail -60; } > /tmp/this.log
+          rm -rf /tmp/logs && mkdir -p /tmp/logs && cd /tmp/logs && git init -q
+          R="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          for i in 1 2 3; do
+            if git fetch -q --depth 50 "$R" run-logs 2>/dev/null; then git checkout -q -B run-logs FETCH_HEAD; else git checkout -q --orphan run-logs; fi
+            mkdir -p logs && cp /tmp/this.log "$NAME"
+            git add -A && git -c user.name=premarket-bot -c user.email=bot@users.noreply.github.com commit -qm "log $NAME"
+            git push -q "$R" run-logs && break
+            sleep $((RANDOM % 10 + 3))
+          done
+
+      - name: 測試模式：把 log 與報告推到 test-results 分支
+        if: github.event_name == 'push' && always()
+        run: |
+          mkdir -p /tmp/out/state && cp -r reports /tmp/out/ 2>/dev/null || true
+          cp run.log /tmp/out/ 2>/dev/null || echo "no run.log（守門員判定不執行）" > /tmp/out/run.log
+          cp gate.log /tmp/out/ 2>/dev/null || true
+          cp "$STATE_DIR"/*.txt /tmp/out/state/ 2>/dev/null || true
+          cd /tmp/out && git init -q && git checkout -q -b test-results
+          echo "run=${{ github.run_id }} market=$MARKET force=$FORCE sha=${{ github.sha }}" > meta.txt
+          git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "test run ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" test-results
+
+      - name: 保存報告
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ env.MARKET }}-${{ github.run_id }}
+          path: stock-premarket-bot/reports/
+          retention-days: 30
+          if-no-files-found: ignore
