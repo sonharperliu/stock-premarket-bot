@@ -236,13 +236,21 @@ def gate(a) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("command", nargs="?", choices=["gate", "run"], default="run")
-    ap.add_argument("--market", choices=["us", "tw"], required=True)
+    ap.add_argument("command", nargs="?", choices=["gate", "run", "which-market"], default="run")
+    ap.add_argument("--market", choices=["us", "tw"])
     ap.add_argument("--force", action="store_true", help="略過時間視窗、休市與今日已推播檢查，立即執行")
     ap.add_argument("--dry-run", action="store_true", help="不發 Telegram，只印出")
     ap.add_argument("--no-llm", action="store_true", help="不呼叫 Claude（測試用）")
     ap.add_argument("--state-dir", default=os.getenv("STATE_DIR"), help="bot-state 內容所在資料夾")
     a = ap.parse_args()
+    if a.command == "which-market":   # 外部觸發未指定市場時，依當地時間視窗推斷
+        from src.scheduler import infer_market
+        m, why = infer_market()
+        print(f"推斷市場：{m}（{why}）", file=sys.stderr)
+        print(m)
+        return 0
+    if not a.market:
+        ap.error("--market 為必填")
     if a.command == "gate":
         gate(a)
         return 0

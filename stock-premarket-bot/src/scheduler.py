@@ -16,7 +16,7 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from .config import LEAD_MINUTES, MARKETS
+from .config import EARLY_GRACE_MINUTES, LEAD_MINUTES, MARKETS
 
 log = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parent.parent
@@ -53,6 +53,22 @@ def clock_info(now: datetime | None = None) -> dict:
             "ny_tz": ny.tzname(), "ny_dst": bool(ny.dst())}
 
 
+def infer_market(now: datetime | None = None) -> tuple[str, str]:
+    """外部觸發未指定市場時，依「現在落在哪個市場的啟動視窗」推斷（冬夏令自動處理）。
+    都不在視窗內時，取今天視窗結束時間最接近現在的市場（讓守門員據實回報太早或漏發）。"""
+    best = None
+    for m in MARKETS:
+        st, mins, _ = check_window(m, now)
+        if st == "run":
+            return m, f"現在落在{MARKETS[m]['name']}啟動視窗內"
+        w_start, w_end = window(m, now)
+        local = now_in(m, now)
+        dist = min(abs((local - w_start).total_seconds()), abs((local - w_end).total_seconds()))
+        if best is None or dist < best[1]:
+            best = (m, dist)
+    return best[0], f"不在任何市場的啟動視窗內，取時間最接近的{MARKETS[best[0]]['name']}"
+
+
 def check_window(market: str, now: datetime | None = None, sent_date: str | None = None) -> tuple[str, float, str]:
     """回傳 (狀態, 距推播時間的分鐘數, 說明)。狀態：run / early / sent / weekend / missed。
     只用標準庫，可在安裝套件前執行。sent_date：bot-state 記錄的最近一次推播的當地日期。"""
@@ -66,10 +82,11 @@ def check_window(market: str, now: datetime | None = None, sent_date: str | None
         return "weekend", mins, f"{where}：週末不推播"
     if sent_date and sent_date.strip() == local.date().isoformat():
         return "sent", mins, f"{where}：今日已推播，不重複發送"
-    if local < w_start:
+    if local < w_start - timedelta(minutes=EARLY_GRACE_MINUTES):
         return "early", mins, f"{where}：尚未到啟動視窗（早 {(w_start - local).total_seconds() / 60:.0f} 分鐘），交給較晚的觸發"
     if local <= w_end:
-        return "run", mins, f"{where}：在視窗內，距推播 {mins:.0f} 分鐘"
+        note = "（視窗開始前抵達，休眠等待）" if local < w_start else ""
+        return "run", mins, f"{where}：在視窗內{note}，距推播 {mins:.0f} 分鐘"
     return "missed", mins, (f"{where}：觸發抵達時已超過視窗 {(local - w_end).total_seconds() / 60:.0f} 分鐘，"
                             f"今日尚未推播 → 漏發")
 

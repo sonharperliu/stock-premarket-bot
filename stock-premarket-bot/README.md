@@ -102,7 +102,10 @@ repo → **Actions → Premarket Stock Report → Run workflow**，選市場、�
    | Schedule | 每週一～五 **07:40**，時區 **Asia/Taipei** | 每週一～五 **08:10**，時區 **America/New_York**（冬夏令由 cron-job.org 自動處理） |
    | Advanced → Request method | POST | POST |
    | Advanced → Headers | `Authorization: Bearer <你的 token>`<br>`Accept: application/vnd.github+json` | 同左 |
-   | Advanced → Request body | `{"event_type":"premarket","client_payload":{"market":"tw"}}` | `{"event_type":"premarket","client_payload":{"market":"us"}}` |
+   | Advanced → Request body | `{"event_type":"premarket"}`（可加 `"client_payload":{"market":"tw"}`） | `{"event_type":"premarket"}`（可加 `"client_payload":{"market":"us"}`） |
+
+   > `event_type` 接受 `premarket` 或 `external_trigger`；未帶 `market` 時，程式依當下落在哪個市場的啟動視窗自動判斷。
+   > 視窗開始前 30 分鐘內抵達也視為有效（休眠等待），所以台北 20:50 觸發美股在冬令（紐約 07:50）也安全。
 
 3. 在 cron-job.org 按 **Test run**，回應 `204` 即成功；Actions 頁面會立即出現一次 `repository_dispatch` 執行。
    （測試時若不在視窗內，守門員會顯示「尚未到視窗」或發一則漏發告警，屬正常。）

@@ -12,7 +12,9 @@ on:
     - cron: "8 12 * * 1-5"    # 美股夏令 EDT：台北 20:08 = 紐約 08:08（冬令時為紐約 07:08，守門員判定太早而讓給下一個）
     - cron: "8 13 * * 1-5"    # 美股冬令 EST：台北 21:08 = 紐約 08:08（夏令時為紐約 09:08，若當日已推播則略過）
   repository_dispatch:
-    types: [premarket]        # body: {"event_type":"premarket","client_payload":{"market":"us"}}（可加 "force": true）
+    # body: {"event_type":"premarket"} 或 {"event_type":"external_trigger"}；
+    # client_payload.market（us/tw）可省略 → 依當地時間視窗自動推斷；可加 "force": true
+    types: [premarket, external_trigger]
   workflow_dispatch:
     inputs:
       market:
@@ -45,8 +47,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180   # 視窗最早啟動時需休眠至推播前 25 分鐘（台股最多約 2 小時）
     concurrency:
-      # 同市場的觸發排隊執行；後到者輪到時看到「今日已推播」即結束，不會重複推播
-      group: premarket-${{ github.event_name == 'push' && 'test' || (github.event.schedule == '18 23 * * 0-4' && 'tw') || github.event.client_payload.market || inputs.market || 'us' }}
+      # 所有正式觸發（排程 / 外部 / 手動）共用一個佇列依序執行（台股與美股時段不重疊）；
+      # 後到者輪到時看到「今日已推播」即結束，不會重複推播。外部觸發可能未帶市場，無法事先分佇列。
+      group: premarket-${{ github.event_name == 'push' && 'test' || 'live' }}
       cancel-in-progress: false
     env:
       STATE_DIR: /tmp/bot-state
@@ -71,7 +74,8 @@ jobs:
           M=""; F=false
           case "$TRIGGER_EVENT" in
             schedule)            if [ "$TRIGGER_SCHEDULE" = "18 23 * * 0-4" ]; then M=tw; else M=us; fi ;;
-            repository_dispatch) M="$PAYLOAD_MARKET"; [ "$PAYLOAD_FORCE" = "true" ] && F=true ;;
+            repository_dispatch) M="$PAYLOAD_MARKET"; [ "$PAYLOAD_FORCE" = "true" ] && F=true
+                                 if [ -z "$M" ]; then M=$(python sp500_tw50_claude_telegram.py which-market); fi ;;
             workflow_dispatch)   M="$INPUT_MARKET";   [ "$INPUT_FORCE" = "true" ] && F=true ;;
             push)                read -r M REST < ../.run-test || true; F=true
                                  case "$REST" in *noforce*) F=false ;; esac ;;
