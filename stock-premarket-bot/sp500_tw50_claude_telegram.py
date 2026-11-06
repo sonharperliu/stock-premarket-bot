@@ -186,7 +186,8 @@ def macro_line(mk: dict) -> str:
     parts = []
     for k in keys:
         if k in mk:
-            parts.append(f"{mk[k]['name']} {mk[k]['last']:g}({mk[k]['chg_1d_pct']:+.1f}%)")
+            flag = "⚠多日" if mk[k].get("data_warning") else ""
+            parts.append(f"{mk[k]['name']} {mk[k]['last']:g}({mk[k]['chg_1d_pct']:+.1f}%{flag})")
     return " | ".join(parts)
 
 

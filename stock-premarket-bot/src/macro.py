@@ -101,11 +101,25 @@ def market_snapshot() -> dict:
     for t, name in MARKET_TICKERS.items():
         try:
             c = raw[t]["Close"].dropna()
-            out[t] = {"name": name, "last": round(float(c.iloc[-1]), 3),
-                      "chg_1d_pct": round(float((c.iloc[-1] / c.iloc[-2] - 1) * 100), 2),
-                      "chg_5d_pct": round(float((c.iloc[-1] / c.iloc[-6] - 1) * 100), 2) if len(c) > 6 else None}
+            item = {"name": name, "last": round(float(c.iloc[-1]), 3),
+                    "chg_1d_pct": round(float((c.iloc[-1] / c.iloc[-2] - 1) * 100), 2),
+                    "chg_5d_pct": round(float((c.iloc[-1] / c.iloc[-6] - 1) * 100), 2) if len(c) > 6 else None,
+                    **bar_check(c.index[-2], c.index[-1])}
+            out[t] = item
         except Exception:
             pass
+    return out
+
+
+def bar_check(prev_ts, last_ts) -> dict:
+    """標示漲跌幅是用哪兩根日 K 計算；中間缺 K 棒（例如 Yahoo 少了一天）時加註警告，
+    避免把「兩天累計」誤當「前一日」漲跌（2026/11/06 加權指數曾因缺 11/05 K 棒顯示 -11.38%）。"""
+    import numpy as np
+    prev_d, last_d = pd.Timestamp(prev_ts).date(), pd.Timestamp(last_ts).date()
+    out = {"chg_from": prev_d.isoformat(), "chg_to": last_d.isoformat()}
+    gap = int(np.busday_count(prev_d, last_d))
+    if gap > 1:
+        out["data_warning"] = f"兩根日K之間相隔 {gap} 個工作日（可能缺資料或連假），漲跌幅為多日累計，不是單日"
     return out
 
 

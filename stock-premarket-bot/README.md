@@ -63,24 +63,56 @@ repo → **Actions → Premarket Stock Report → Run workflow**，選市場、�
 
 之後就全自動，週一到週五準時推播。
 
-## 排程原理（為什麼不用每年改設定、也不怕 GitHub 延遲）
-GitHub cron 只支援 UTC，而且**尖峰時段常延遲 30~60 分鐘、偶爾漏跑**（實測 10/29、10/30 都延遲約 50 分鐘）。因此：
+## 排程原理與「外部精準觸發」（強烈建議設定）
 
-1. 每個市場在推播前約 4 小時內排 6~7 個觸發（美股 UTC 09:47~13:47、台股 UTC 21:37~00:32）。
-2. 程式用 `America/New_York` / `Asia/Taipei` 計算今天真正的推播時間（冬夏令自動處理）。
-3. **最先抵達**的觸發：休眠到推播前 25 分鐘 → 抓最新數據 + Claude 分析 → 準點推播 → 在 `bot-state` 分支記錄「今日已推播」。
-4. **之後抵達**的觸發：同市場排隊，輪到時看到今日已推播，約 30 秒內結束（不安裝套件、不呼叫 Claude）。
-5. 萬一所有觸發都延遲到推播時間之後：3 小時內仍補送，並在訊息開頭標示「⚠️ 開盤後送達」。
+### 為什麼不能只靠 GitHub cron
+實測 2026/11/02–11/06：GitHub 的 schedule 事件**本身晚 3～10 小時才建立**（事件一建立就立即執行、排隊 0 分鐘），
+美股觸發全部在紐約收盤前後才抵達，台股最多只能遲到補送。這與 cron 用哪個分鐘數無關，是 GitHub 排程服務的延遲。
+因此本專案採用：
 
-模擬「每個觸發隨機延遲 0~75 分鐘、10% 漏跑」各 1000 天：美股夏令、冬令、台股皆 100% 準時、0 重複。
+| 觸發 | 角色 | 準時性 |
+|---|---|---|
+| 外部 cron → `repository_dispatch` | **主要**（設定見下方） | 幾秒內啟動 |
+| GitHub cron（UTC 23:18 / 12:08 / 13:08） | 備援；若太晚抵達會發 Telegram 漏發告警 | 不保證，實測延遲數小時 |
+| `workflow_dispatch`（Actions 頁面手動） | 手動補跑 | 即時 |
 
-> 這個 repo 是公開的，Actions 分鐘數不限，休眠不額外收費。若改為 Private，每月約需 5,000+ 分鐘，會超過免費額度。
+### 守門員（`sp500_tw50_claude_telegram.py gate`）
+不比對 cron 字串，一律以 `zoneinfo` 取得**市場當地時間**判斷（冬夏令自動處理）：
+
+| 市場 | 啟動視窗（當地） | 換算台北時間 | 推播 |
+|---|---|---|---|
+| 台股 | 06:30–08:50 | 06:30–08:50 | 08:50 |
+| 美股 | 07:50–09:00 紐約 | 夏令 EDT 19:50–21:00／冬令 EST 20:50–22:00 | 紐約 09:20 |
+
+- 在視窗內 → 休眠到推播前 25 分鐘抓最新數據 + Claude 分析 → 準點推播 → 記錄今日已推播（同日其他觸發自動略過）
+- 視窗已過且今日未推播 → **不送過時報告，改發一則 Telegram 漏發告警**（每市場每日一次）
+- 休市日（`NYSE` / `XTAI` 行事曆 + 證交所公告）→ 發一則休市通知
+- 每次都在 Actions log 印出：台北時間、美東時間、EDT/EST、休市與否、跳過原因
+
+### 設定外部精準觸發（cron-job.org，免費，約 5 分鐘）
+1. **建立 GitHub Token**：GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token
+   - Repository access：Only select repositories → `stock-premarket-bot`
+   - Permissions → Repository permissions → **Contents：Read and write**（`repository_dispatch` 需要這個權限）
+   - 到期日可設 1 年，記下 token（只顯示一次）
+2. **註冊 https://cron-job.org**，建立 2 個 Cronjob：
+
+   | 欄位 | 台股 | 美股 |
+   |---|---|---|
+   | URL | `https://api.github.com/repos/sonharperliu/stock-premarket-bot/dispatches` | 同左 |
+   | Schedule | 每週一～五 **07:40**，時區 **Asia/Taipei** | 每週一～五 **08:10**，時區 **America/New_York**（冬夏令由 cron-job.org 自動處理） |
+   | Advanced → Request method | POST | POST |
+   | Advanced → Headers | `Authorization: Bearer <你的 token>`<br>`Accept: application/vnd.github+json` | 同左 |
+   | Advanced → Request body | `{"event_type":"premarket","client_payload":{"market":"tw"}}` | `{"event_type":"premarket","client_payload":{"market":"us"}}` |
+
+3. 在 cron-job.org 按 **Test run**，回應 `204` 即成功；Actions 頁面會立即出現一次 `repository_dispatch` 執行。
+   （測試時若不在視窗內，守門員會顯示「尚未到視窗」或發一則漏發告警，屬正常。）
 
 ### 除錯用的分支（程式自動維護，不要手動修改）
 | 分支 | 內容 |
 |---|---|
 | `bot-state` | 各市場最近一次成功推播的當地日期（防止同日重複推播） |
-| `run-logs` | 每次觸發的時間窗判斷與執行摘要（哪個觸發幾點抵達、做了什麼） |
+| `bot-state` 補充 | `last_alert_<market>.txt`：最近一次漏發告警 / 休市通知的日期 |
+| `run-logs` | 每次觸發的守門員判斷與執行摘要（哪個觸發幾點抵達、做了什麼） |
 | `test-results` | 測試開關最近一次的完整 log 與報告 |
 
 ## 自訂
@@ -97,8 +129,9 @@ GitHub cron 只支援 UTC，而且**尖峰時段常延遲 30~60 分鐘、偶爾�
 ## 本機測試
 ```bash
 pip install -r requirements.txt
-python main.py --market us --force --dry-run --no-llm   # 不花 API、不發 Telegram
-python main.py --market tw --force --dry-run            # 呼叫 Claude，結果印在終端機
+python sp500_tw50_claude_telegram.py gate --market us                       # 只跑守門員：印出時間/時區/判斷
+python sp500_tw50_claude_telegram.py run --market us --force --dry-run --no-llm   # 不花 API、不發 Telegram
+python sp500_tw50_claude_telegram.py run --market tw --force --dry-run            # 呼叫 Claude，結果印在終端機
 ```
 
 ## 費用估算
